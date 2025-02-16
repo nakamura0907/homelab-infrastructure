@@ -29,7 +29,7 @@ jobs:
         uses: tj-actions/changed-files@v45
         with:
           base_sha: ${{ github.event.pull_request.base.sha }}
-          files: terraform/**/*.yml
+          files: terraform/**/*.tf
       - name: List all changed files
         env:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
