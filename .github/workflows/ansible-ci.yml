@@ -45,11 +45,13 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     needs: check-changes
+    defaults:
+      run:
+        working-directory: subdir
     steps:
       - uses: actions/checkout@v4
       - name: Run ansible-lint
         uses: ansible/ansible-lint@main
-        working-directory: ansible
         # optional (see below):
         with:
           args: ""
