@@ -46,6 +46,8 @@ jobs:
     defaults:
       run:
         working-directory: terraform
+    env:
+      PROD_ENVIRONMENT_DIR: terraform/environments/homelab
     steps:
       - uses: actions/checkout@v4
       - name: Set up Terraform
@@ -55,12 +57,14 @@ jobs:
         run: |
           terraform fmt -check -diff -recursive
       - name: Terraform init
-        working-directory: terraform/environments/homelab
+        working-directory: ${{ env.PROD_ENVIRONMENT_DIR }}
         run: |
-          pwd
           terraform init
       - name: Terraform validate
-        working-directory: terraform/environments/homelab
+        working-directory: ${{ env.PROD_ENVIRONMENT_DIR }}
         run: |
           terraform validate
-
+      - name: Terraform test
+        working-directory: ${{ env.PROD_ENVIRONMENT_DIR }}
+        run: |
+          terraform test
