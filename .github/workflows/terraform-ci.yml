@@ -55,12 +55,12 @@ jobs:
         run: |
           terraform fmt -check -diff -recursive
       - name: Terraform init
-        working-directory: environments/homelab
+        working-directory: terraform/environments/homelab
         run: |
           pwd
           terraform init
       - name: Terraform validate
-        working-directory: environments/homelab
+        working-directory: terraform/environments/homelab
         run: |
           terraform validate
 
