@@ -1,0 +1,28 @@
+---
+- name: Cluster prep
+  hosts: k3s_cluster
+  gather_facts: true
+  become: true
+  roles:
+    - role: k3s.orchestration.prereq
+    # - role: k3s.orchestration.airgap
+    - role: k3s.orchestration.raspberrypi
+
+- name: Setup Prod K3s server
+  hosts: k3s_prod_cluster_server
+  become: true
+  roles:
+    - role: k3s.orchestration.k3s_server
+
+- name: Setup Prod K3s agent
+  hosts: k3s_prod_cluster_agent
+  become: true
+  roles:
+    - role: k3s.orchestration.k3s_agent
+
+# 同じクラスターになってしまうため
+- name: Setup Staging K3s server
+  hosts: k3s_stg_cluster_server
+  become: true
+  roles:
+    - role: k3s.orchestration.k3s_server
