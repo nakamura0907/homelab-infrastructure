@@ -49,6 +49,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run ansible-lint
         uses: ansible/ansible-lint@main
+        working-directory: ansible
         # optional (see below):
         with:
           args: ""
