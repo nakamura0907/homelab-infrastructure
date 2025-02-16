@@ -1,4 +1,4 @@
-name: ansible-ci
+name: terraform-ci
 
 on:
   pull_request:
@@ -16,12 +16,12 @@ concurrency:
 
 jobs:
   check-changes:
-    name: Check Ansible changes
+    name: Check Terraform changes
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
-      ansible_changed: ${{ steps.changed-files.outputs.any_changed }}
+      terraform_changed: ${{ steps.changed-files.outputs.any_changed }}
     steps:
       - uses: actions/checkout@v4
       - name: Get changed files
@@ -29,7 +29,7 @@ jobs:
         uses: tj-actions/changed-files@v45
         with:
           base_sha: ${{ github.event.pull_request.base.sha }}
-          files: ansible/**/*.yml
+          files: terraform/**/*.yml
       - name: List all changed files
         env:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
@@ -37,31 +37,30 @@ jobs:
           for file in ${ALL_CHANGED_FILES}; do
             echo "$file was changed"
           done
-
-
-  lint:
-    name: Ansible Lint
-    if: needs.check-changes.outputs.ansible_changed == 'true'
+  test: 
+    name: Terraform test
+    if: needs.check-changes.outputs.terraform_changed == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     needs: check-changes
     defaults:
       run:
-        working-directory: ansible
+        working-directory: terraform
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13' 
-      - name: Install ansible, ansible-lint package
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform fmt
         run: |
-          pip3 install ansible ansible-lint
-      - name: Install Ansible Galaxy roles
+          terraform fmt -check -diff -recursive
+      - name: Terraform init
+        working-directory: environments/homelab
         run: |
-          if [ -f 'requirements.yml' ]; then
-            ansible-galaxy install -r requirements.yml
-          fi
-      - name: Run ansible-lint
+          pwd
+          terraform init
+      - name: Terraform validate
+        working-directory: environments/homelab
         run: |
-          ansible-lint
+          terraform validate
+
