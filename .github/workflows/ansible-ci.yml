@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   check-changes:
-    name: Check Ansible changes 
+    name: Check Ansible changes
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -47,7 +47,7 @@ jobs:
     needs: check-changes
     defaults:
       run:
-        working-directory: subdir
+        working-directory: ansible
     steps:
       - uses: actions/checkout@v4
       - name: Run ansible-lint
