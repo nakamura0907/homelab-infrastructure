@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   check-changes:
-    name: Check Ansible changes 
+    name: Check Ansible changes
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -45,13 +45,23 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     needs: check-changes
+    defaults:
+      run:
+        working-directory: ansible
     steps:
       - uses: actions/checkout@v4
-      - name: Run ansible-lint
-        uses: ansible/ansible-lint@main
-        # optional (see below):
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          args: ""
-          setup_python: "true"
-          working_directory: ""
-          requirements_file: ""
+          python-version: '3.13' 
+      - name: Install ansible, ansible-lint package
+        run: |
+          pip3 install ansible ansible-lint
+      - name: Install Ansible Galaxy roles
+        run: |
+          if [ -f 'requirements.yml' ]; then
+            ansible-galaxy install -r requirements.yml
+          fi
+      - name: Run ansible-lint
+        run: |
+          ansible-lint
