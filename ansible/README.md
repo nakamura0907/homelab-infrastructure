@@ -2,9 +2,13 @@
 
 ## Usage
 
+以下のコマンドでロールのインストールを行う。
+
 ```bash
 $ ansible-galaxy install -r requirements.yml
 ```
+
+以下のコマンドでプレイブックを実行する。
 
 ```bash
 $ ansible-playbook site.yml
