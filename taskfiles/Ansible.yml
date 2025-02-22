@@ -1,0 +1,17 @@
+version: '3'
+
+vars:
+  ANSIBLE_DIR: "../ansible"
+
+tasks:
+  install:
+    desc: Install Ansible dependencies
+    dir: "{{.ANSIBLE_DIR}}"
+    cmds:
+      - ansible-galaxy install -r requirements.yml
+
+  run:
+    desc: Runs Ansible playbooks
+    dir: "{{.ANSIBLE_DIR}}"
+    cmds:
+      - ansible-playbook site.yml

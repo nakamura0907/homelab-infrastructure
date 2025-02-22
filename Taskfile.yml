@@ -1,50 +1,16 @@
 version: '3'
 
-vars:
-  TERRAFORM_DIR: "./terraform/environments/homelab"
-  TERRAFORM_VAR_FILE: "terraform.tfvars"
-  ANSIBLE_DIR: "./ansible"
+includes:
+  terraform:
+    taskfile: ./taskfiles/Terraform.yml
+    dir: taskfiles
+  ansible:
+    taskfile: ./taskfiles/Ansible.yml
+    dir: taskfiles
 
 tasks:
-# terraform
-  terraform:generate:
-    desc: Generate Terraform tfvars
-    dir: "./scripts"
-    cmds:
-      - python3 generate_tfvars.py
-
-  terraform:init:
-    desc: Run terraform init
-    dir: "{{.TERRAFORM_DIR}}"
-    cmds:
-      - terraform init
-    
-  terraform:fmt:
-    desc: Run terraform fmt
-    dir: "{{.TERRAFORM_DIR}}/../../"
-    cmds:
-      - terraform fmt -recursive
-
-  terraform:plan:
-    desc: Run terraform plan
-    dir: "{{.TERRAFORM_DIR}}"
-    cmds:
-      - terraform plan -var-file="{{.TERRAFORM_VAR_FILE}}"
-
-  terraform:apply:
-    desc: Run terraform apply
-    dir: "{{.TERRAFORM_DIR}}"
-    cmds:
-      - terraform apply -var-file="{{.TERRAFORM_VAR_FILE}}" -auto-approve
-# ansible
-  ansible:install:
-    desc: Install Ansible dependencies
-    dir: "{{.ANSIBLE_DIR}}"
-    cmds:
-      - ansible-galaxy install -r requirements.yml
-
-  ansible:run:
-    desc: Runs Ansible playbooks
-    dir: "{{.ANSIBLE_DIR}}"
-    cmds:
-      - ansible-playbook site.yml
+  default:
+    aliases:
+      - list
+    desc: List all tasks
+    cmd: task -l
