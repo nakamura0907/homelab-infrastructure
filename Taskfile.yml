@@ -1,0 +1,16 @@
+version: '3'
+
+includes:
+  terraform:
+    taskfile: ./taskfiles/Terraform.yml
+    dir: taskfiles
+  ansible:
+    taskfile: ./taskfiles/Ansible.yml
+    dir: taskfiles
+
+tasks:
+  default:
+    aliases:
+      - list
+    desc: List all tasks
+    cmd: task -l
