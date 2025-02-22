@@ -36,4 +36,15 @@ tasks:
     dir: "{{.TERRAFORM_DIR}}"
     cmds:
       - terraform apply -var-file="{{.TERRAFORM_VAR_FILE}}" -auto-approve
+# ansible
+  ansible:install:
+    desc: Install Ansible dependencies
+    dir: "{{.ANSIBLE_DIR}}"
+    cmds:
+      - ansible-galaxy install -r requirements.yml
 
+  ansible:run:
+    desc: Runs Ansible playbooks
+    dir: "{{.ANSIBLE_DIR}}"
+    cmds:
+      - ansible-playbook site.yml
