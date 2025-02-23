@@ -4,3 +4,7 @@ kind: Kustomization
 namespace: nginx
 resources:
   - ../../base/nginx
+patches:
+  - path: nginx-values.yaml
+    target:
+      kind: Deployment
