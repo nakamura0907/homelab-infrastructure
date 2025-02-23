@@ -10,7 +10,7 @@ spec:
   ref:
     branch: kube/flux-cd-trial
   secretRef:
-    name: flux-system
+    name: main
   url: ssh://git@github.com/nakamura0907/homelab-infrastructure
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
