@@ -5,6 +5,9 @@ namespace: nginx
 resources:
   - ../../base/nginx
 patches:
+  - path: nginx-service-values.yaml
+    target:
+      kind: Service
   - path: nginx-values.yaml
     target:
       kind: Deployment
