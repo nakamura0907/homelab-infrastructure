@@ -11,7 +11,7 @@ spec:
     branch: feat/create-pihole-manifest
   secretRef:
     name: flux-system
-  url: ssh://git@github.com/nakamura0907/homelab-infrastructure
+  url: https://github.com/nakamura0907/homelab-infrastructure.git
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
