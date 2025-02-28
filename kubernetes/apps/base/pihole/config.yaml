@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pihole-dns-config
+  namespace: pihole
+data:
+  custom-dns-entries: |
+    192.168.0.110 k3s-server-1.homelab.
+    192.168.0.111 k3s-agent-1.homelab.
+    192.168.0.112 k3s-agent-2.homelab.
+    192.168.0.120 staging.k3s-server-1.homelab.
+    192.168.0.200 proxmox.homelab.
+    192.168.0.210 openmediavault.homelab.
+    192.168.0.212 vault.homelab.
+    192.168.0.231 pihole.homelab.
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pihole-upstream-dns
+  namespace: pihole
+data:
+  01-upstream-dns: |
+    server=8.8.8.8
+    server=8.8.4.4
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pihole-interface-settings
+  namespace: pihole
+data:
+  02-bind-interface: |
+    interface=eth0

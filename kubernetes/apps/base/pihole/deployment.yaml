@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pihole
+  namespace: pihole
+  labels:
+    app: pihole
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pihole
+  template:
+    metadata:
+      labels:
+        app: pihole
+    spec:
+      containers:
+      - name: pihole
+        image: pihole/pihole:2024.07.0
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "32Mi"
+          limits:
+            cpu: "100m"
+            memory: "64Mi"
+        ports:
+        - containerPort: 80
+          name: http
+        - containerPort: 53
+          name: dns-tcp
+          protocol: TCP
+        - containerPort: 53
+          name: dns-udp
+          protocol: UDP
+        volumeMounts:
+        - name: custom-dns-config
+          mountPath: /etc/pihole/custom.list
+          subPath: custom-dns-entries
+        - name: upstream-dns-config
+          mountPath: /etc/dnsmasq.d/01-upstream-dns.conf
+          subPath: 01-upstream-dns
+        - name: interface-settings-config
+          mountPath: /etc/dnsmasq.d/02-bind-interface.conf
+          subPath: 02-bind-interface
+        env:
+        - name: TZ
+          value: "Asia/Tokyo"
+      volumes:
+      - name: custom-dns-config
+        configMap:
+          name: pihole-dns-config
+      - name: upstream-dns-config
+        configMap:
+          name: pihole-upstream-dns
+      - name: interface-settings-config
+        configMap:
+          name: pihole-interface-settings
