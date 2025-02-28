@@ -16,6 +16,7 @@ export GITHUB_TOKEN=<token>
 export GITHUB_USER=nakamura0907
 
 flux bootstrap github \
+  --token-auth \
   --owner=$GITHUB_USER \
   --repository=homelab-infrastructure \
   --branch=<branch> \
@@ -26,7 +27,26 @@ flux bootstrap github \
 すでに上記コマンドを実行済みの場合は`kubectl apply`で生成されたリソースをインストールできる。
 
 ```bash
-kubectl apply -f ./kubernetes/clusters/<cluster>/flux-system/gotk-components.yaml
-kubectl apply -f ./kubernetes/clusters/<cluster>/flux-system/gotk-sync.yaml
-kubectl apply -f ./kubernetes/clusters/<cluster>/flux-system/kustomization.yaml
+kubectl apply -k ./kubernetes/clusters/<cluster>/flux-system
+
+# ここを改善したい
+kubectl create secret generic flux-system \
+  --namespace=flux-system \
+  --from-literal=username="$GITHUB_USER" \
+  --from-literal=password="$GITHUB_TOKEN"
+```
+
+## トラブルシューティング
+
+### Flux CD トラブルシューティング
+
+[Troubleshooting cheatsheet](https://fluxcd.io/flux/cheatsheets/troubleshooting/)
+
+### Flux CDのインストールでエラーになる
+
+以下のコマンドで状態を確認する。
+
+```bash
+flux get kustomizations --watch
+flux get sources git
 ```
