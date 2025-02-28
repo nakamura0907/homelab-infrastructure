@@ -48,6 +48,8 @@ spec:
         env:
         - name: TZ
           value: "Asia/Tokyo"
+        - name: WEBPASSWORD
+          value: "password"
       volumes:
       - name: custom-dns-config
         configMap:
