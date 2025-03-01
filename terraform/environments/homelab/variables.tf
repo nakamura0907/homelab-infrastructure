@@ -216,3 +216,33 @@ variable "secret_manager_vmid" {
   type    = number
   default = 212
 }
+
+// LXC-monitoring
+variable "monitoring_cpuunits" {
+  type    = number
+  default = 2048
+}
+variable "monitoring_hostname" {
+  type    = string
+  default = "monitoring"
+}
+variable "monitoring_memory" {
+  type    = number
+  default = 2048
+}
+variable "monitoring_network_ip" {
+  type    = string
+  default = "192.168.0.214/24"
+}
+variable "monitoring_rootfs_size" {
+  type    = string
+  default = "8G"
+}
+variable "monitoring_swap" {
+  type    = number
+  default = 512
+}
+variable "monitoring_vmid" {
+  type    = number
+  default = 214
+}
