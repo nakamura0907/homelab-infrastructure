@@ -1,2 +1,2 @@
 ---
-extra_server_args: "--disable servicelb"
+extra_server_args: "--disable servicelb,traefik"
