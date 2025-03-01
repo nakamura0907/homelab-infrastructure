@@ -54,6 +54,16 @@ variable "memory" {
   description = "The amount of memory to allocate to the VM in Megabytes."
   type        = string
 }
+variable "onboot" {
+  default     = true
+  description = "Whether to have the VM startup after the PVE node starts."
+  type        = bool
+}
+variable "vm_state" {
+  default     = null
+  description = "The desired state of the VM, options are running, stopped and started. Do note that started will only start the vm on creation and won't fully manage the power state unlike running and stopped do."
+  type        = string
+}
 variable "storage_pool" {
   description = "Required when type=disk and passthrough=false. The name of the storage pool on which to store the disk."
   type        = string
