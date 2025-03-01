@@ -3,3 +3,6 @@ collections:
   - name: k3s/orchestration
     type: git
     source: https://github.com/k3s-io/k3s-ansible.git
+  - name: prometheus/prometheus
+    type: git
+    source: https://github.com/prometheus-community/ansible.git
