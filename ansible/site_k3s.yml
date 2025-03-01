@@ -5,6 +5,7 @@
   become: true
   roles:
     - role: k3s.orchestration.prereq
+    # with_first_foundでエラーが発生するため
     # - role: k3s.orchestration.airgap
     - role: k3s.orchestration.raspberrypi
 
