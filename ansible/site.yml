@@ -1,3 +1,6 @@
 ---
 - name: K3s Cluster
   ansible.builtin.import_playbook: site_k3s.yml
+
+- name: Monitoring
+  ansible.builtin.import_playbook: site_monitoring.yml
