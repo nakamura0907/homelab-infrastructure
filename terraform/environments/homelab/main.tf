@@ -89,6 +89,9 @@ module "k3s_staging_server_1" {
   cores   = var.k3s_agent_cores
   memory  = var.k3s_agent_memory
 
+  onboot   = var.k3s_staging_server_1_onboot
+  vm_state = var.k3s_staging_server_1_vm_state
+
   storage_pool = var.storage_pool
   storage_size = var.k3s_agent_storage_size
 }

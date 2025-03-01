@@ -149,6 +149,14 @@ variable "k3s_staging_server_1_ipconfig" {
   type    = string
   default = "ip=192.168.0.120/24"
 }
+variable "k3s_staging_server_1_onboot" {
+  type    = bool
+  default = false
+}
+variable "k3s_staging_server_1_vm_state" {
+  type    = string
+  default = "stopped"
+}
 
 variable "openmediavault_name" {
   type    = string
