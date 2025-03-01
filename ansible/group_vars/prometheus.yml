@@ -4,4 +4,4 @@ prometheus_system_group: 'root'
 prometheus_targets:
   node:
     - targets:
-      - localhost:9100
+        - localhost:9100
