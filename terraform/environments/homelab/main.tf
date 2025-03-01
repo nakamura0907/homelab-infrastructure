@@ -133,16 +133,17 @@ module "secret_manager" {
 
   target_node = var.target_node
 
-  ostemplate  = var.lxc_ostemplate
-  cpuunits    = var.secret_manager_cpuunits
-  hostname    = var.secret_manager_hostname
-  memory      = var.secret_manager_memory
-  network_ip  = var.secret_manager_network_ip
-  rootfs_size = var.secret_manager_rootfs_size
-  swap        = var.secret_manager_swap
-  vmid        = var.secret_manager_vmid
+  ostemplate      = var.lxc_ostemplate
+  cpuunits        = var.secret_manager_cpuunits
+  hostname        = var.secret_manager_hostname
+  memory          = var.secret_manager_memory
+  network_ip      = var.secret_manager_network_ip
+  rootfs_size     = var.secret_manager_rootfs_size
+  ssh_public_keys = var.sshkeys
+  swap            = var.secret_manager_swap
+  vmid            = var.secret_manager_vmid
 }
-resource "null_resource" "configure_lxc" {
+resource "null_resource" "configure_secret_manager" {
   depends_on = [module.secret_manager]
 
   provisioner "local-exec" {
@@ -164,4 +165,40 @@ resource "null_resource" "configure_lxc" {
   }
 }
 
-// development
+// monitoring
+module "monitoring" {
+  source = "../../modules/proxmox-lxc"
+
+  target_node = var.target_node
+
+  ostemplate      = var.lxc_ostemplate
+  cpuunits        = var.monitoring_cpuunits
+  hostname        = var.monitoring_hostname
+  memory          = var.monitoring_memory
+  network_ip      = var.monitoring_network_ip
+  rootfs_size     = var.monitoring_rootfs_size
+  ssh_public_keys = var.sshkeys
+  swap            = var.monitoring_swap
+  vmid            = var.monitoring_vmid
+}
+resource "null_resource" "configure_monitoring" {
+  depends_on = [module.monitoring]
+
+  provisioner "local-exec" {
+    environment = {
+      PM_API_URL = var.pm_api_url
+      NODE       = var.target_node
+      VMID       = var.monitoring_vmid
+      TOKEN      = "${var.pm_api_token_id}=${var.pm_api_token_secret}"
+    }
+    command = <<EOT
+        curl -k -X PUT "$PM_API_URL/nodes/$NODE/lxc/$VMID/config" \
+            -H "Authorization: PVEAPIToken=$TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"onboot": 1}'
+
+        curl -k -X POST "$PM_API_URL/nodes/$NODE/lxc/$VMID/status/start" \
+            -H "Authorization: PVEAPIToken=$TOKEN"
+    EOT
+  }
+}
