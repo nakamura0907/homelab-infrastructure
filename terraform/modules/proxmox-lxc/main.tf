@@ -15,6 +15,10 @@ resource "proxmox_lxc" "this" {
   unprivileged    = true
   vmid            = var.vmid
 
+  features {
+    nesting = var.features_nesting
+  }
+
   // Terraform will crash without rootfs defined
   rootfs {
     storage = var.rootfs_storage

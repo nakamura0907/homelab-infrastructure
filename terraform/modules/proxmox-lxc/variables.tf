@@ -21,6 +21,12 @@ variable "cpuunits" {
   default     = null
 }
 
+variable "features_nesting" {
+  description = "A boolean to allow nested virtualization."
+  type        = bool
+  default     = false
+}
+
 variable "hostname" {
   description = "Specifies the host name of the container."
   type        = string

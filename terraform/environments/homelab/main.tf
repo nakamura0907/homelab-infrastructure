@@ -180,6 +180,8 @@ module "monitoring" {
   ssh_public_keys = var.sshkeys
   swap            = var.monitoring_swap
   vmid            = var.monitoring_vmid
+
+  features_nesting = true
 }
 resource "null_resource" "configure_monitoring" {
   depends_on = [module.monitoring]
