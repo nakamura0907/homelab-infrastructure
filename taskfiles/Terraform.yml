@@ -35,3 +35,9 @@ tasks:
     dir: "{{.TERRAFORM_DIR}}"
     cmds:
       - terraform apply -var-file="{{.TERRAFORM_VAR_FILE}}" -auto-approve
+
+  destroy:
+    desc: Run terraform destroy
+    dir: "{{.TERRAFORM_DIR}}"
+    cmds:
+      - terraform destroy -var-file="{{.TERRAFORM_VAR_FILE}}"

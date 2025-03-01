@@ -22,8 +22,9 @@ resource "proxmox_vm_qemu" "this" {
   scsihw  = "virtio-scsi-pci"
 
   // オプション
-  boot   = "order=scsi0;ide2"
-  onboot = true
+  boot     = "order=scsi0;ide2"
+  onboot   = var.onboot
+  vm_state = var.vm_state
 
   disks {
     ide {
