@@ -137,6 +137,7 @@ module "secret_manager" {
   cpuunits        = var.secret_manager_cpuunits
   hostname        = var.secret_manager_hostname
   memory          = var.secret_manager_memory
+  onboot          = var.secret_manager_onboot
   network_ip      = var.secret_manager_network_ip
   rootfs_size     = var.secret_manager_rootfs_size
   ssh_public_keys = var.sshkeys
@@ -175,6 +176,7 @@ module "monitoring" {
   cpuunits        = var.monitoring_cpuunits
   hostname        = var.monitoring_hostname
   memory          = var.monitoring_memory
+  onboot          = var.monitoring_onboot
   network_ip      = var.monitoring_network_ip
   rootfs_size     = var.monitoring_rootfs_size
   ssh_public_keys = var.sshkeys

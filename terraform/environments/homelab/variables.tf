@@ -200,6 +200,10 @@ variable "secret_manager_memory" {
   type    = number
   default = 1024
 }
+variable "secret_manager_onboot" {
+  type    = bool
+  default = true
+}
 variable "secret_manager_network_ip" {
   type    = string
   default = "192.168.0.212/24"
@@ -229,6 +233,10 @@ variable "monitoring_hostname" {
 variable "monitoring_memory" {
   type    = number
   default = 2048
+}
+variable "monitoring_onboot" {
+  type    = bool
+  default = true
 }
 variable "monitoring_network_ip" {
   type    = string

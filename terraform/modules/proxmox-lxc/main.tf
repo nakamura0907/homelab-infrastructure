@@ -30,10 +30,4 @@ resource "proxmox_lxc" "this" {
     bridge = var.network_bridge
     ip     = var.network_ip
   }
-
-  lifecycle {
-    ignore_changes = [
-      onboot,
-    ]
-  }
 }
