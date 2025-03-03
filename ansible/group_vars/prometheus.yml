@@ -1,0 +1,7 @@
+---
+# FIXME: 所有者がrootのままのため。修正する
+prometheus_system_group: 'root'
+prometheus_targets:
+  node:
+    - targets:
+        - localhost:9100
