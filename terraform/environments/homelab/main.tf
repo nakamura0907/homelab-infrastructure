@@ -137,33 +137,30 @@ module "secret_manager" {
   cpuunits        = var.secret_manager_cpuunits
   hostname        = var.secret_manager_hostname
   memory          = var.secret_manager_memory
+  onboot          = var.secret_manager_onboot
   network_ip      = var.secret_manager_network_ip
   rootfs_size     = var.secret_manager_rootfs_size
   ssh_public_keys = var.sshkeys
   swap            = var.secret_manager_swap
   vmid            = var.secret_manager_vmid
 }
-resource "null_resource" "configure_secret_manager" {
-  depends_on = [module.secret_manager]
+// local-exec不要で作成後の起動ができるようになったため削除
+# resource "null_resource" "configure_secret_manager" {
+#   depends_on = [module.secret_manager]
 
-  provisioner "local-exec" {
-    environment = {
-      PM_API_URL = var.pm_api_url
-      NODE       = var.target_node
-      VMID       = var.secret_manager_vmid
-      TOKEN      = "${var.pm_api_token_id}=${var.pm_api_token_secret}"
-    }
-    command = <<EOT
-        curl -k -X PUT "$PM_API_URL/nodes/$NODE/lxc/$VMID/config" \
-            -H "Authorization: PVEAPIToken=$TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"onboot": 1}'
-
-        curl -k -X POST "$PM_API_URL/nodes/$NODE/lxc/$VMID/status/start" \
-            -H "Authorization: PVEAPIToken=$TOKEN"
-    EOT
-  }
-}
+#   provisioner "local-exec" {
+#     environment = {
+#       PM_API_URL = var.pm_api_url
+#       NODE       = var.target_node
+#       VMID       = var.secret_manager_vmid
+#       TOKEN      = "${var.pm_api_token_id}=${var.pm_api_token_secret}"
+#     }
+#     command = <<EOT
+#         curl -k -X POST "$PM_API_URL/nodes/$NODE/lxc/$VMID/status/start" \
+#             -H "Authorization: PVEAPIToken=$TOKEN"
+#     EOT
+#   }
+# }
 
 // monitoring
 module "monitoring" {
@@ -175,6 +172,7 @@ module "monitoring" {
   cpuunits        = var.monitoring_cpuunits
   hostname        = var.monitoring_hostname
   memory          = var.monitoring_memory
+  onboot          = var.monitoring_onboot
   network_ip      = var.monitoring_network_ip
   rootfs_size     = var.monitoring_rootfs_size
   ssh_public_keys = var.sshkeys
@@ -183,24 +181,4 @@ module "monitoring" {
 
   features_nesting = true
 }
-resource "null_resource" "configure_monitoring" {
-  depends_on = [module.monitoring]
-
-  provisioner "local-exec" {
-    environment = {
-      PM_API_URL = var.pm_api_url
-      NODE       = var.target_node
-      VMID       = var.monitoring_vmid
-      TOKEN      = "${var.pm_api_token_id}=${var.pm_api_token_secret}"
-    }
-    command = <<EOT
-        curl -k -X PUT "$PM_API_URL/nodes/$NODE/lxc/$VMID/config" \
-            -H "Authorization: PVEAPIToken=$TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"onboot": 1}'
-
-        curl -k -X POST "$PM_API_URL/nodes/$NODE/lxc/$VMID/status/start" \
-            -H "Authorization: PVEAPIToken=$TOKEN"
-    EOT
-  }
-}
+// local-exec不要で作成後の起動ができるようになったため削除
