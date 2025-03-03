@@ -1,0 +1,6 @@
+---
+grafana_ini:
+  security:
+    admin_user: admin
+    # TODO: 修正
+    admin_password: password
