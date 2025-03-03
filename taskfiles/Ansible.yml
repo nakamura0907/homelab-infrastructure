@@ -11,7 +11,13 @@ tasks:
       - ansible-galaxy install -r requirements.yml
 
   run:
-    desc: Runs Ansible playbooks
+    desc: |
+      Runs Ansible playbooks.
+      Usage:
+        task run # Runs site.yml(default)
+        task run -- xxx.yml # Runs xxx.yml
     dir: "{{.ANSIBLE_DIR}}"
+    vars:
+      PLAYBOOK: "{{.CLI_ARGS | default \"site.yml\"}}"
     cmds:
-      - ansible-playbook site.yml
+      - ansible-playbook {{.PLAYBOOK}}
