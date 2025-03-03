@@ -6,3 +6,6 @@ collections:
   - name: prometheus/prometheus
     type: git
     source: https://github.com/prometheus-community/ansible.git
+  - name: grafana.grafana
+    type: git
+    source: https://github.com/grafana/grafana-ansible-collection.git
