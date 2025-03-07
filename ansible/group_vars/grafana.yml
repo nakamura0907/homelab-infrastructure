@@ -10,6 +10,9 @@ grafana_dashboards:
   - dashboard_id: 15489
     revision_id: 2
     datasource: prometheus
+  - dashboard_id: 20138
+    revision_id: 1
+    datasource: prometheus
 grafana_datasources:
   - name: prometheus
     type: prometheus
