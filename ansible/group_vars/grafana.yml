@@ -4,6 +4,8 @@ grafana_ini:
     admin_user: admin
     # TODO: 修正
     admin_password: password
+  metrics:
+    enabled: true
 grafana_dashboards:
   - dashboard_id: 15489
     revision_id: 2
