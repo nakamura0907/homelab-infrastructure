@@ -4,3 +4,17 @@ grafana_ini:
     admin_user: admin
     # TODO: 修正
     admin_password: password
+  metrics:
+    enabled: true
+grafana_dashboards:
+  - dashboard_id: 15489
+    revision_id: 2
+    datasource: prometheus
+  - dashboard_id: 20138
+    revision_id: 1
+    datasource: prometheus
+grafana_datasources:
+  - name: prometheus
+    type: prometheus
+    access: proxy
+    url: 'http://localhost:9090'
