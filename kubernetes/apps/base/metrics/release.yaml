@@ -1,0 +1,19 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: metrics
+spec:
+  releaseName: prometheus
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: metrics
+  interval: 50m
+  values:
+    grafana:
+      enabled: false
