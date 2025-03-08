@@ -13,8 +13,15 @@ grafana_dashboards:
   - dashboard_id: 20138
     revision_id: 1
     datasource: prometheus
+  - dashboard_id: 16450
+    revision_id: 3
+    datasource: prometheus-kube
 grafana_datasources:
   - name: prometheus
     type: prometheus
     access: proxy
     url: 'http://localhost:9090'
+  - name: prometheus-kube
+    type: prometheus
+    access: proxy
+    url: 'http://192.168.0.232:9090'
