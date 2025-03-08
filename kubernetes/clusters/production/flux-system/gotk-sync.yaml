@@ -8,7 +8,7 @@ metadata:
 spec:
   interval: 1m0s
   ref:
-    branch: main
+    branch: feat/issue40-add-prometheus-operator-resorce
   secretRef:
     name: flux-system
   url: https://github.com/nakamura0907/homelab-infrastructure.git
