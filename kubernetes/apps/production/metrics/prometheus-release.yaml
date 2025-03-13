@@ -21,3 +21,4 @@ spec:
       service:
         type: LoadBalancer
         loadBalancerIP: 192.168.0.232
+        loadBalancerSourceRanges: 192.168.0.214/32
