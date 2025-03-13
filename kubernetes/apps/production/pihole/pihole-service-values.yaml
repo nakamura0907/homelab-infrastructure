@@ -9,6 +9,8 @@ spec:
     app: pihole
   type: LoadBalancer
   loadBalancerIP: 192.168.0.231
+  loadBalancerSourceRanges: 
+    - 192.168.0.0/24
   ports:
   - port: 80
     targetPort: 80
