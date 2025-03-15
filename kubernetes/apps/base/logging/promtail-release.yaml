@@ -6,6 +6,9 @@ metadata:
   namespace: logging
 spec:
   releaseName: promtail
+  dependsOn:
+    - name: loki
+      namespace: logging
   chart:
     spec:
       chart: promtail
