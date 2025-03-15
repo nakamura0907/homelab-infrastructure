@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: logging
 resources:
   - ../../base/logging
-patches:
-  - path: loki-release.yaml
-    target:
-      kind: HelmRelease
+# patches:
+#   - path: loki-release.yaml
+#     target:
+#       kind: HelmRelease
