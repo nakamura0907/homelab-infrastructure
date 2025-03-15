@@ -5,7 +5,7 @@ metadata:
   name: loki
   namespace: logging
 spec:
-  releaseName: prometheus
+  releaseName: loki
   chart:
     spec:
       chart: loki
