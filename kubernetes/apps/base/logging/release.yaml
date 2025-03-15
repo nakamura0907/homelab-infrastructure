@@ -39,7 +39,11 @@ spec:
 
     # minio:
     #   enabled: true
-          
+
+    # リソースの問題でfalse
+    chunksCache:
+      enabled: false
+
     deploymentMode: SingleBinary
 
     singleBinary:
