@@ -8,7 +8,7 @@ metadata:
 spec:
   interval: 1m0s
   ref:
-    branch: main
+    branch: feat/issue51-k3s-loki-apply
   secretRef:
     name: flux-system
   url: https://github.com/nakamura0907/homelab-infrastructure.git
