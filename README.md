@@ -8,6 +8,8 @@ coming soon...
 
 ## 環境情報
 
+![Diagram](./docs/diagram.png)
+
 ### ハードウェア
 
 - `GMKtec G3 Plus`
