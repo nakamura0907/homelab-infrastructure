@@ -18,7 +18,7 @@ spec:
     loki:
       auth_enabled: false
       commonConfig:
-        replication_factor: 1
+        replication_factor: 3
       schemaConfig:
         configs:
           - from: "2024-04-01"
@@ -52,11 +52,11 @@ spec:
 
     # Zero out replica counts of other deployment modes
     backend:
-      replicas: 1
+      replicas: 0
     read:
-      replicas: 1
+      replicas: 0
     write:
-      replicas: 1
+      replicas: 0
 
     ingester:
       replicas: 0
