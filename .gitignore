@@ -1,2 +1,6 @@
 .kube/*
 !.kube/.gitkeep
+
+# diagrams
+homelab.png
+diagram_pihole.png
