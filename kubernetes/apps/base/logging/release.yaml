@@ -43,7 +43,7 @@ spec:
     deploymentMode: SingleBinary
 
     singleBinary:
-      replicas: 3
+      replicas: 1
 
     # Zero out replica counts of other deployment modes
     backend:
