@@ -1,0 +1,53 @@
+@startuml
+' @see https://github.com/cloudogu/plantuml-cloudogu-sprites/tree/v1.0.2
+!define CLOUDOGUURL https://raw.githubusercontent.com/cloudogu/plantuml-cloudogu-sprites/v1.0.2
+!includeurl https://raw.githubusercontent.com/cloudogu/plantuml-cloudogu-sprites/v1.0.2/common.puml
+!include CLOUDOGUURL/tools/grafana.puml
+!include CLOUDOGUURL/tools/prometheus.puml
+
+' @see https://github.com/tupadr3/plantuml-icon-font-sprites/tree/v3.0.0
+!includeurl https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/v3.0.0/icons/common.puml
+!includeurl https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/v3.0.0/icons/font-awesome-5/github.puml
+!includeurl https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/v3.0.0/icons/material/storage.puml
+
+top to bottom direction
+title 自宅サーバー構成図
+
+' 非推奨のためCSSスタイルに変更する
+skinparam actorStyle awesome
+skinparam rectangle {
+    BackgroundColor transparent
+}
+
+:User: as user
+FA5_GITHUB(github)
+
+rectangle "Proxmox" {
+ rectangle "VM - OVM" {
+  MATERIAL_STORAGE(ovm, OpenMediaVault)
+ }
+
+ rectangle "LXC - Monitoring" {
+  TOOL_PROMETHEUS(prometheus, Prometheus) #ffffff
+  TOOL_GRAFANA(grafana, Grafana) #ffffff
+
+  grafana --> prometheus
+ }
+
+ rectangle "K3s Prod Cluster" {
+    TOOL_PROMETHEUS(kpprometheus, Prometheus) #ffffff
+    rectangle "Flux CD" as flux
+    rectangle "Pi-hole" as pihole
+ }
+}
+
+user -right-> github
+user --> grafana
+user --> ovm
+user --> pihole
+
+flux --> github
+
+grafana --> kpprometheus
+
+@enduml
