@@ -14,7 +14,7 @@ spec:
         name: grafana
         namespace: logging
   interval: 50m
-  values:
-    config:
-      clients:
-        - url: http://192.168.0.233/loki/api/v1/push
+  # values:
+  #   config:
+  #     clients:
+  #       - url: http://192.168.0.233/loki/api/v1/push
