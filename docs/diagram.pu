@@ -19,8 +19,10 @@ skinparam rectangle {
     BackgroundColor transparent
 }
 
-:User: as user
-FA5_GITHUB(github)
+together {
+ :User: as user
+ FA5_GITHUB(github)
+}
 
 rectangle "Proxmox" {
  rectangle "VM - OVM" {
@@ -35,8 +37,11 @@ rectangle "Proxmox" {
  }
 
  rectangle "K3s Prod Cluster" {
+    rectangle "Flux CD" as prodflux
+
     TOOL_PROMETHEUS(kpprometheus, Prometheus) #ffffff
-    rectangle "Flux CD" as flux
+    rectangle "Loki" as loki
+
     rectangle "Pi-hole" as pihole
  }
 }
@@ -46,8 +51,9 @@ user --> grafana
 user --> ovm
 user --> pihole
 
-flux --> github
+prodflux --> github
 
 grafana --> kpprometheus
+grafana --> loki
 
 @enduml
