@@ -16,6 +16,9 @@ grafana_dashboards:
   - dashboard_id: 16450
     revision_id: 3
     datasource: prometheus-kube
+  - dashboard_id: 15141
+    revision_id: 1
+    datasource: loki
 grafana_datasources:
   - name: prometheus
     type: prometheus
@@ -25,3 +28,7 @@ grafana_datasources:
     type: prometheus
     access: proxy
     url: 'http://192.168.0.232:9090'
+  - name: loki
+    type: loki
+    access: proxy
+    url: 'http://192.168.0.233'
