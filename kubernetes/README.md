@@ -50,3 +50,7 @@ kubectl create secret generic flux-system \
 flux get kustomizations --watch
 flux get sources git
 ```
+
+### 同じ名前空間内で同じkindがあるとすべて置き換えられてしまう
+
+patches[].path.target.nameを指定する
