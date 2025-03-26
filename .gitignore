@@ -1,5 +1,6 @@
 .kube/*
 !.kube/.gitkeep
+!.kube/README.md
 
 # diagrams
 homelab.png
