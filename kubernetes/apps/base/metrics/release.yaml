@@ -15,5 +15,23 @@ spec:
         namespace: metrics
   interval: 50m
   values:
+    alertmanager:
+      alertmanagerSpec:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
     grafana:
       enabled: false
+    prometheus:
+      prometheusSpec:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
