@@ -1,0 +1,4 @@
+---
+# Failed to get unit file state for nm-cloud-setup.service: No such file or directory
+# が発生するため、以下のオプションは指定しない
+# extra_agent_args: "--node-label node-role.kubernetes.io/agent=true"
