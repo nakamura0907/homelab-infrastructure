@@ -120,6 +120,9 @@ module "openmediavault" {
   cores   = var.openmediavault_cores
   memory  = var.openmediavault_memory
 
+  onboot   = var.openmediavault_onboot
+  vm_state = var.openmediavault_vm_state
+
   storage_pool = var.storage_pool
   storage_size = var.openmediavault_storage_size
 

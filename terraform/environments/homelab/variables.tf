@@ -182,6 +182,14 @@ variable "openmediavault_memory" {
   type    = number
   default = 2048
 }
+variable "openmediavault_onboot" {
+  type    = bool
+  default = false
+}
+variable "openmediavault_vm_state" {
+  type    = string
+  default = "stopped"
+}
 variable "openmediavault_storage_size" {
   type    = string
   default = "6G"
