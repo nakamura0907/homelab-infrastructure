@@ -34,6 +34,9 @@ kubectl create secret generic flux-system \
   --namespace=flux-system \
   --from-literal=username="$GITHUB_USER" \
   --from-literal=password="$GITHUB_TOKEN"
+
+flux reconcile source git flux-system
+flux get kustomizations --watch
 ```
 
 ## トラブルシューティング
