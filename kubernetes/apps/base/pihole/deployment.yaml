@@ -16,6 +16,14 @@ spec:
       labels:
         app: pihole
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
       containers:
       - name: pihole
         image: pihole/pihole:2024.07.0
