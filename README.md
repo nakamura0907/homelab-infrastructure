@@ -4,7 +4,13 @@
 
 ## セットアップ手順
 
-coming soon...
+```bash
+docker build -t homelab-docker .
+
+docker run -it --rm -v "$(pwd)":/workspace -w /workspace homelab-docker
+# windows
+# MSYS_NO_PATHCONV=1 docker run -it --rm -v "$(pwd)":/workspace -w /workspace homelab-docker
+```
 
 ## 環境情報
 
