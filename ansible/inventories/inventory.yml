@@ -36,3 +36,7 @@ monitoring:
     grafana:
       hosts:
         192.168.0.214:
+# シークレット管理
+secret_manager:
+  hosts:
+    192.168.0.212:
