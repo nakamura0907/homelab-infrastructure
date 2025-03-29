@@ -20,5 +20,5 @@ docker run -it --rm -v "$(pwd)":/workspace -w /workspace homelab-docker
 
 - `GMKtec G3 Plus`
   - CPU: `Alder Lake-Nシリーズ N100`
-  - RAM: `16GB`
+  - RAM: ~~`16GB`~~ `32GB`
   - SSD: `256GB`
