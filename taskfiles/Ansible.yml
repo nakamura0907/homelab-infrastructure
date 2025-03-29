@@ -5,10 +5,22 @@ vars:
 
 tasks:
   install:
-    desc: Install Ansible dependencies
+    desc: Install both Ansible collections and roles
+    cmds:
+      - task: install:collection
+      - task: install:roll
+
+  install:collection:
+    desc: Install Ansible Collection dependencies
     dir: "{{.ANSIBLE_DIR}}"
     cmds:
       - ansible-galaxy install -r requirements.yml
+
+  install:roll:
+    desc: Install Ansible Role dependencies
+    dir: "{{.ANSIBLE_DIR}}"
+    cmds:
+      - ansible-galaxy role install -r roles/requirements.yml
 
   run:
     desc: |
