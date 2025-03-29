@@ -4,3 +4,6 @@
 
 - name: Monitoring
   ansible.builtin.import_playbook: site_monitoring.yml
+
+- name: Secret Manager
+  ansible.builtin.import_playbook: site_secret_manager.yml
