@@ -27,7 +27,7 @@ flux bootstrap github \
 すでに上記コマンドを実行済みの場合は`kubectl apply`で生成されたリソースをインストールできる。
 
 ```bash
-kubectl apply -k ./kubernetes/clusters/<cluster>/flux-system
+kubectl apply -k ./kubernetes/clusters/production/flux-system
 
 # ここを改善したい
 kubectl create secret generic flux-system \

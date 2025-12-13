@@ -1,0 +1,38 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: existing-homepage-configmap
+  namespace: homepage
+data:
+  settings.yaml: |
+    headerStyle: boxed
+  bookmarks.yaml: |
+    {}
+  widgets.yaml: |
+    - resources:
+        backend: resources
+        expanded: true
+        cpu: true
+        memory: true
+    - search:
+        provider: duckduckgo
+        target: _blank
+  services.yaml: |
+    - My Apps:
+      - Proxmox:
+          icon: proxmox
+          href: https://192.168.0.200:8006
+          description: Virtualization
+      - Pi-hole:
+          icon: pi-hole
+          href: http://192.168.0.231/admin
+          description: Network-wide Ad Blocking
+      - Grafana:
+          icon: grafana
+          href: http://192.168.0.214:3000/
+          description: Analytics and Monitoring
+  kubernetes.yaml: |
+    {}
+  docker.yaml: |
+    {}
