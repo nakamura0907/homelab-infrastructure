@@ -25,7 +25,7 @@
           ];
           shellHook = ''
             echo "🏠 Homelab dev environment loaded!"
-            echo "Available tools: python3, terraform, kubectl, helm, fluxcd, ansible"
+            echo "Available tools: python3, terraform, kubectl, helm, fluxcd, ansible go-task"
           '';
         };
       });
