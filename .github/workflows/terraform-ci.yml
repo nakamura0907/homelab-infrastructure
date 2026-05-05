@@ -37,7 +37,7 @@ jobs:
           for file in ${ALL_CHANGED_FILES}; do
             echo "$file was changed"
           done
-  test: 
+  test:
     name: Terraform test
     if: needs.check-changes.outputs.terraform_changed == 'true'
     runs-on: ubuntu-24.04
@@ -47,7 +47,7 @@ jobs:
       run:
         working-directory: terraform
     env:
-      PROD_ENVIRONMENT_DIR: terraform/environments/homelab
+      PROD_ENVIRONMENT_DIR: terraform/proxmox
     steps:
       - uses: actions/checkout@v4
       - name: Set up Terraform

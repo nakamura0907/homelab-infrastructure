@@ -5,3 +5,7 @@
 # diagrams
 homelab.png
 diagram_pihole.png
+
+.envrc
+.env
+.direnv

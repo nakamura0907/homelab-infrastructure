@@ -4,12 +4,18 @@
 
 ## セットアップ手順
 
-```bash
-docker build -t homelab-docker .
+### 前提条件
 
-docker run -it --rm -v "$(pwd)":/workspace -w /workspace homelab-docker
-# windows
-# MSYS_NO_PATHCONV=1 docker run -it --rm -v "$(pwd)":/workspace -w /workspace homelab-docker
+このプロジェクトを動かすには、以下のツールがインストールされている必要があります。
+
+- Nix
+- direnv
+
+### 環境の起動
+
+```bash
+echo "use flake\ndotenv" >> .envrc
+direnv allow
 ```
 
 ## 環境情報

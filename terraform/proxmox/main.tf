@@ -1,6 +1,6 @@
 // k3s_server
 module "k3s_server_1" {
-  source = "../../modules/proxmox-vm-cloud-init"
+  source = "./modules/proxmox-vm-cloud-init"
 
   name        = var.k3s_server_1_name
   target_node = var.target_node
@@ -24,7 +24,7 @@ module "k3s_server_1" {
 
 // k3s_agent
 module "k3s_agent_1" {
-  source = "../../modules/proxmox-vm-cloud-init"
+  source = "./modules/proxmox-vm-cloud-init"
 
   name        = var.k3s_agent_1_name
   target_node = var.target_node
@@ -47,7 +47,7 @@ module "k3s_agent_1" {
 }
 
 module "k3s_agent_2" {
-  source = "../../modules/proxmox-vm-cloud-init"
+  source = "./modules/proxmox-vm-cloud-init"
 
   name        = var.k3s_agent_2_name
   target_node = var.target_node
@@ -71,7 +71,7 @@ module "k3s_agent_2" {
 
 // k3s_staging
 module "k3s_staging_server_1" {
-  source = "../../modules/proxmox-vm-cloud-init"
+  source = "./modules/proxmox-vm-cloud-init"
 
   name        = var.k3s_staging_server_1_name
   target_node = var.target_node
@@ -98,7 +98,7 @@ module "k3s_staging_server_1" {
 
 // NAS
 module "openmediavault" {
-  source = "../../modules/proxmox-vm-cloud-init"
+  source = "./modules/proxmox-vm-cloud-init"
 
   providers = {
     proxmox = proxmox.rootuser
@@ -132,7 +132,7 @@ module "openmediavault" {
 
 // Secret Manager
 module "secret_manager" {
-  source = "../../modules/proxmox-lxc"
+  source = "./modules/proxmox-lxc"
 
   target_node = var.target_node
 
@@ -167,7 +167,7 @@ module "secret_manager" {
 
 // monitoring
 module "monitoring" {
-  source = "../../modules/proxmox-lxc"
+  source = "./modules/proxmox-lxc"
 
   target_node = var.target_node
 
