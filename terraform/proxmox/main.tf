@@ -142,6 +142,7 @@ module "secret_manager" {
   memory          = var.secret_manager_memory
   onboot          = var.secret_manager_onboot
   network_ip      = var.secret_manager_network_ip
+  network_gw      = var.lxc_gw
   rootfs_size     = var.secret_manager_rootfs_size
   ssh_public_keys = var.sshkeys
   swap            = var.secret_manager_swap
@@ -177,6 +178,7 @@ module "monitoring" {
   memory          = var.monitoring_memory
   onboot          = var.monitoring_onboot
   network_ip      = var.monitoring_network_ip
+  network_gw      = var.lxc_gw
   rootfs_size     = var.monitoring_rootfs_size
   ssh_public_keys = var.sshkeys
   swap            = var.monitoring_swap
@@ -185,3 +187,29 @@ module "monitoring" {
   features_nesting = true
 }
 // local-exec不要で作成後の起動ができるようになったため削除
+
+// DNS (Pi-hole + Unbound)
+module "dns" {
+  source = "./modules/proxmox-lxc"
+
+  providers = {
+    proxmox = proxmox.rootuser
+  }
+
+  target_node = var.target_node
+
+  ostemplate      = var.lxc_ostemplate
+  cpuunits        = var.dns_cpuunits
+  hostname        = var.dns_hostname
+  memory          = var.dns_memory
+  onboot          = var.dns_onboot
+  network_ip      = var.dns_network_ip
+  network_gw      = var.lxc_gw
+  rootfs_size     = var.dns_rootfs_size
+  ssh_public_keys = var.sshkeys
+  swap            = var.dns_swap
+  vmid            = var.dns_vmid
+
+  features_nesting = true
+  features_keyctl  = true
+}

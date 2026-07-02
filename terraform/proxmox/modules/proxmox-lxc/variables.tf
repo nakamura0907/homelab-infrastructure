@@ -27,6 +27,12 @@ variable "features_nesting" {
   default     = false
 }
 
+variable "features_keyctl" {
+  description = "A boolean to enable the keyctl syscall inside the container. Required to run Docker in an unprivileged container."
+  type        = bool
+  default     = false
+}
+
 variable "hostname" {
   description = "Specifies the host name of the container."
   type        = string
@@ -61,6 +67,12 @@ variable "network_ip" {
   description = "The IPv4 address of the network interface. Can be a static IPv4 address (in CIDR notation), 'dhcp', or 'manual'."
   type        = string
   default     = "dhcp"
+}
+
+variable "network_gw" {
+  description = "The default gateway IPv4 address for the network interface."
+  type        = string
+  default     = null
 }
 
 variable "onboot" {

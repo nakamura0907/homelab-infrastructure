@@ -1,0 +1,4 @@
+{{ ansible_managed | comment('plain') }}
+{% for r in dns_records %}
+{{ r.ip }} {{ r.name }}.home.arpa
+{% endfor %}

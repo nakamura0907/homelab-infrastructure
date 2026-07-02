@@ -22,3 +22,11 @@
 #   to = module.secret_manager.proxmox_lxc.this
 #   id = "${var.target_node}/lxc/${var.secret_manager_vmid}"
 # }
+# import {
+#   to = module.dns.proxmox_lxc.this
+#   id = "${var.target_node}/lxc/${var.dns_vmid}"
+# }
+# import {
+#   to = module.monitoring.proxmox_lxc.this
+#   id = "${var.target_node}/lxc/${var.monitoring_vmid}"
+# }

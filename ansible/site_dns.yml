@@ -1,0 +1,73 @@
+---
+- name: Setup DNS (Pi-hole + Unbound)
+  hosts: dns
+  roles:
+    # Docker Engine + Compose plugin をインストール
+    - role: geerlingguy.docker
+
+  handlers:
+    # 設定ファイル変更時に Pi-hole を再起動して custom.list / dnsmasq.d を再読込
+    - name: Restart pihole
+      community.docker.docker_compose_v2:
+        project_src: "{{ dns_compose_dir }}"
+        services:
+          - pihole
+        state: restarted
+
+  tasks:
+    - name: Check whether systemd-resolved is present
+      ansible.builtin.stat:
+        path: /lib/systemd/system/systemd-resolved.service
+      register: dns_resolved_unit
+
+    # Debian 標準 LXC テンプレートでは通常存在しないが、存在する場合は
+    # ポート 53 を解放するために停止する
+    - name: Stop and disable systemd-resolved to free port 53
+      ansible.builtin.systemd:
+        name: systemd-resolved
+        state: stopped
+        enabled: false
+      when: dns_resolved_unit.stat.exists
+
+    - name: Create compose project directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ dns_compose_dir }}"
+        - "{{ dns_compose_dir }}/pihole/etc-pihole"
+        - "{{ dns_compose_dir }}/pihole/etc-dnsmasq.d"
+        - "{{ dns_compose_dir }}/unbound/conf.d"
+
+    - name: Deploy Pi-hole custom DNS records (home.arpa)
+      ansible.builtin.template:
+        src: templates/dns/custom.list.j2
+        dest: "{{ dns_compose_dir }}/pihole/etc-pihole/custom.list"
+        mode: "0644"
+      notify: Restart pihole
+
+    - name: Deploy dnsmasq home.arpa non-forward config
+      ansible.builtin.template:
+        src: templates/dns/02-home-arpa.conf.j2
+        dest: "{{ dns_compose_dir }}/pihole/etc-dnsmasq.d/02-home-arpa.conf"
+        mode: "0644"
+      notify: Restart pihole
+
+    - name: Deploy Unbound home.arpa config
+      ansible.builtin.template:
+        src: templates/dns/unbound-home-arpa.conf.j2
+        dest: "{{ dns_compose_dir }}/unbound/conf.d/home-arpa.conf"
+        mode: "0644"
+
+    - name: Deploy compose file
+      ansible.builtin.template:
+        src: templates/dns/compose.yaml.j2
+        dest: "{{ dns_compose_dir }}/compose.yaml"
+        mode: "0644"
+
+    - name: Start Pi-hole + Unbound stack
+      community.docker.docker_compose_v2:
+        project_src: "{{ dns_compose_dir }}"
+        state: present
+        remove_orphans: true

@@ -45,6 +45,10 @@ variable "ipconfig_gw" {
   type    = string
   default = "gw=192.168.0.1"
 }
+variable "lxc_gw" {
+  type    = string
+  default = "192.168.0.1"
+}
 variable "nameserver" {
   type    = string
   default = "192.168.0.1"
@@ -261,4 +265,38 @@ variable "monitoring_swap" {
 variable "monitoring_vmid" {
   type    = number
   default = 214
+}
+
+// LXC - DNS (Pi-hole + Unbound)
+variable "dns_cpuunits" {
+  type    = number
+  default = 1024
+}
+variable "dns_hostname" {
+  type    = string
+  default = "dns"
+}
+variable "dns_memory" {
+  type    = number
+  default = 1024
+}
+variable "dns_onboot" {
+  type    = bool
+  default = true
+}
+variable "dns_network_ip" {
+  type    = string
+  default = "192.168.0.213/24"
+}
+variable "dns_rootfs_size" {
+  type    = string
+  default = "8G"
+}
+variable "dns_swap" {
+  type    = number
+  default = 512
+}
+variable "dns_vmid" {
+  type    = number
+  default = 213
 }
