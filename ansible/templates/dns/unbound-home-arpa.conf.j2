@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+server:
+    # 非特権LXC内では chroot 用 /dev ファイルを mknod できないため chroot を無効化する
+    chroot: ""
+    # chroot 無効時はログを stderr（Docker ログ）へ出力
+    logfile: ""
+    use-syslog: no
+
+    # home.arpa は RFC 8375 で insecure 委任のため、DNSSEC 検証の対象から外す。
+    # 通常は dnsmasq 側の local=/home.arpa/ により home.arpa は Unbound へ渡らないが、
+    # 防御的にローカルゾーンとして扱う。
+    domain-insecure: "home.arpa."
+    local-zone: "home.arpa." transparent

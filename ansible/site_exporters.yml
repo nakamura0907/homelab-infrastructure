@@ -28,6 +28,13 @@
         timeout: 5s
         icmp:
           preferred_ip_protocol: ip4
+      dns_home_arpa:
+        prober: dns
+        timeout: 5s
+        dns:
+          query_name: monitoring.home.arpa
+          query_type: A
+          preferred_ip_protocol: ip4
   roles:
     - prometheus.prometheus.blackbox_exporter
 

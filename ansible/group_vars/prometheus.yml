@@ -18,6 +18,7 @@ prometheus_scrape_configs:
       - targets:
           - "192.168.0.210:9100" # openmediavault
           - "192.168.0.212:9100" # vault
+          - "192.168.0.213:9100" # dns
           - "192.168.0.214:9100" # monitoring
   # NASのディスクSMART(smartctl_exporter)
   - job_name: "smartctl"
@@ -32,7 +33,7 @@ prometheus_scrape_configs:
     static_configs:
       - targets:
           - http://192.168.0.214:3000 # grafana
-          - http://192.168.0.231/admin # pi-hole
+          - http://192.168.0.213/admin # pi-hole (dns lxc)
           - http://192.168.0.235 # homepage
           - http://192.168.0.232:9090 # k3s prometheus
     relabel_configs:
@@ -51,6 +52,22 @@ prometheus_scrape_configs:
       - targets:
           - 192.168.0.210 # openmediavault
           - 192.168.0.212 # vault
+          - 192.168.0.213 # dns
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 192.168.0.214:9115
+  # 外形監視(blackbox_exporter): DNS解決（DNS LXCが単独クリティカルサービスのため）
+  - job_name: "blackbox-dns"
+    metrics_path: /probe
+    params:
+      module: [dns_home_arpa]
+    static_configs:
+      - targets:
+          - 192.168.0.213:53 # dns (pi-hole)
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
