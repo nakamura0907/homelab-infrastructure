@@ -45,6 +45,10 @@ variable "ipconfig_gw" {
   type    = string
   default = "gw=192.168.0.1"
 }
+variable "lxc_gw" {
+  type    = string
+  default = "192.168.0.1"
+}
 variable "nameserver" {
   type    = string
   default = "192.168.0.1"

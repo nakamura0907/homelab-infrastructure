@@ -8,10 +8,11 @@
   handlers:
     # 設定ファイル変更時に Pi-hole を再起動して custom.list / dnsmasq.d を再読込
     - name: Restart pihole
-      community.docker.docker_container:
-        name: pihole
-        state: started
-        restart: true
+      community.docker.docker_compose_v2:
+        project_src: "{{ dns_compose_dir }}"
+        services:
+          - pihole
+        state: restarted
 
   tasks:
     - name: Check whether systemd-resolved is present
@@ -69,3 +70,4 @@
       community.docker.docker_compose_v2:
         project_src: "{{ dns_compose_dir }}"
         state: present
+        remove_orphans: true

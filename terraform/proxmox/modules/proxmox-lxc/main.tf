@@ -30,5 +30,6 @@ resource "proxmox_lxc" "this" {
     name   = var.network_name
     bridge = var.network_bridge
     ip     = var.network_ip
+    gw     = var.network_gw
   }
 }

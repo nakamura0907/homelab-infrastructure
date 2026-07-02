@@ -69,6 +69,12 @@ variable "network_ip" {
   default     = "dhcp"
 }
 
+variable "network_gw" {
+  description = "The default gateway IPv4 address for the network interface."
+  type        = string
+  default     = null
+}
+
 variable "onboot" {
   description = "A boolean that determines if the container will start on boot."
   type        = bool
