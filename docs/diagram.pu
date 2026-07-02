@@ -29,6 +29,10 @@ rectangle "Proxmox" {
   MATERIAL_STORAGE(ovm, OpenMediaVault)
  }
 
+ rectangle "LXC - Vault" {
+  rectangle "Vault" as vault
+ }
+
  rectangle "LXC - Monitoring" {
   TOOL_PROMETHEUS(prometheus, Prometheus) #ffffff
   TOOL_GRAFANA(grafana, Grafana) #ffffff
@@ -55,5 +59,13 @@ prodflux --> github
 
 grafana --> kpprometheus
 grafana --> loki
+
+' LXCのPrometheusが非K3sノードのメトリクスを収集(node_exporter/blackbox)
+prometheus --> ovm
+prometheus --> vault
+
+' 非K3sノードのjournaldログをAlloyでLokiへ集約
+ovm --> loki
+vault --> loki
 
 @enduml

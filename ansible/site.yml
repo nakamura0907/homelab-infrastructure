@@ -4,3 +4,6 @@
 
 - name: Monitoring
   ansible.builtin.import_playbook: site_monitoring.yml
+
+- name: Exporters
+  ansible.builtin.import_playbook: site_exporters.yml

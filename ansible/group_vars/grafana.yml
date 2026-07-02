@@ -19,6 +19,14 @@ grafana_dashboards:
   - dashboard_id: 15141
     revision_id: 1
     datasource: loki
+  # Node Exporter Full（インフラノードのホストメトリクス）
+  - dashboard_id: 1860
+    revision_id: 37
+    datasource: prometheus
+  # Prometheus Blackbox Exporter（外形監視）
+  - dashboard_id: 7587
+    revision_id: 3
+    datasource: prometheus
 grafana_datasources:
   - name: prometheus
     type: prometheus
