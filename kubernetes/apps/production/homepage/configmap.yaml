@@ -26,7 +26,7 @@ data:
           description: Virtualization
       - Pi-hole:
           icon: pi-hole
-          href: http://192.168.0.231/admin
+          href: http://192.168.0.213/admin
           description: Network-wide Ad Blocking
       - Grafana:
           icon: grafana

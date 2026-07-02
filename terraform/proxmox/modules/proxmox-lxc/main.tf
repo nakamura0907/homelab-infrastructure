@@ -17,6 +17,7 @@ resource "proxmox_lxc" "this" {
 
   features {
     nesting = var.features_nesting
+    keyctl  = var.features_keyctl
   }
 
   // Terraform will crash without rootfs defined

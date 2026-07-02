@@ -185,3 +185,25 @@ module "monitoring" {
   features_nesting = true
 }
 // local-exec不要で作成後の起動ができるようになったため削除
+
+// DNS (Pi-hole + Unbound)
+module "dns" {
+  source = "./modules/proxmox-lxc"
+
+  target_node = var.target_node
+
+  ostemplate      = var.lxc_ostemplate
+  cpuunits        = var.dns_cpuunits
+  hostname        = var.dns_hostname
+  memory          = var.dns_memory
+  onboot          = var.dns_onboot
+  network_ip      = var.dns_network_ip
+  rootfs_size     = var.dns_rootfs_size
+  ssh_public_keys = var.sshkeys
+  swap            = var.dns_swap
+  vmid            = var.dns_vmid
+
+  // Docker (Pi-hole + Unbound) を unprivileged LXC 上で動かすため
+  features_nesting = true
+  features_keyctl  = true
+}

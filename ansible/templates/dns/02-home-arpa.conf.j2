@@ -1,0 +1,4 @@
+# {{ ansible_managed }}
+# RFC 8375: home.arpa はローカル(custom.list)でのみ解決し、
+# 未定義名を上流(Unbound/公開DNS)やルートサーバへ転送しない。
+local=/home.arpa/

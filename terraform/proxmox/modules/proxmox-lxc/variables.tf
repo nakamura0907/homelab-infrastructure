@@ -27,6 +27,12 @@ variable "features_nesting" {
   default     = false
 }
 
+variable "features_keyctl" {
+  description = "A boolean to enable the keyctl syscall inside the container. Required to run Docker in an unprivileged container."
+  type        = bool
+  default     = false
+}
+
 variable "hostname" {
   description = "Specifies the host name of the container."
   type        = string

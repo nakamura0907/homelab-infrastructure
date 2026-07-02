@@ -1,0 +1,46 @@
+# {{ ansible_managed }}
+services:
+  unbound:
+    image: {{ unbound_image }}
+    container_name: unbound
+    hostname: unbound
+    restart: unless-stopped
+    volumes:
+      # 追加設定（home.arpa を insecure 扱いにする防御的設定）
+      - ./unbound/conf.d:/opt/unbound/etc/unbound/unbound.conf.d:ro
+    networks:
+      dns_net:
+        ipv4_address: {{ dns_unbound_ip }}
+
+  pihole:
+    image: {{ pihole_image }}
+    container_name: pihole
+    hostname: pihole
+    restart: unless-stopped
+    depends_on:
+      - unbound
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "80:80/tcp"
+    environment:
+      TZ: "{{ dns_timezone }}"
+      WEBPASSWORD: "{{ dns_web_password }}"
+      FTLCONF_LOCAL_IPV4: "{{ dns_host_ip }}"
+      # 上流は同一ネットワーク上の Unbound（再帰リゾルバ）
+      PIHOLE_DNS_: "{{ dns_unbound_ip }}#53"
+      # DNSSEC 検証は Unbound 側で行うため Pi-hole 側は無効化
+      DNSSEC: "false"
+    volumes:
+      - ./pihole/etc-pihole:/etc/pihole
+      - ./pihole/etc-dnsmasq.d:/etc/dnsmasq.d
+    networks:
+      dns_net:
+        ipv4_address: {{ dns_pihole_ip }}
+
+networks:
+  dns_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: {{ dns_internal_subnet }}

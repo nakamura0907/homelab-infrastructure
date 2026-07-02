@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+# home.arpa は RFC 8375 で insecure 委任のため、DNSSEC 検証の対象から外す。
+# 通常は dnsmasq 側の local=/home.arpa/ により home.arpa は Unbound へ渡らないが、
+# 防御的にローカルゾーンとして扱う。
+server:
+    domain-insecure: "home.arpa."
+    local-zone: "home.arpa." transparent

@@ -9,3 +9,9 @@ collections:
   - name: grafana.grafana
     type: git
     source: https://github.com/grafana/grafana-ansible-collection.git
+  # DNS LXC (Pi-hole + Unbound) の Docker Compose 制御用
+  - name: community.docker
+
+roles:
+  # DNS LXC への Docker Engine インストール用
+  - name: geerlingguy.docker

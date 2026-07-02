@@ -1,0 +1,34 @@
+---
+# DNS LXC (Pi-hole + Unbound) を Docker Compose で構築するための変数
+
+# LXC 自身のIP（Pi-hole のリッスンIP / FTLCONF_LOCAL_IPV4）
+dns_host_ip: "192.168.0.213"
+dns_timezone: "Asia/Tokyo"
+
+# Pi-hole 管理画面のパスワード
+# TODO: 平文を避け、Ansible Vault もしくは secret-manager(vault) 連携へ置き換える
+dns_web_password: "changeme"
+
+# Compose プロジェクトの配置先（LXC 内）
+dns_compose_dir: "/opt/dns"
+
+# Pi-hole ⇔ Unbound を繋ぐ内部 Docker ネットワーク
+dns_internal_subnet: "172.20.0.0/24"
+dns_unbound_ip: "172.20.0.2"
+dns_pihole_ip: "172.20.0.3"
+
+# 使用イメージ（pihole は現行 K8s と同タグ）
+pihole_image: "pihole/pihole:2024.07.0"
+unbound_image: "mvance/unbound:latest"
+
+# 内部Aレコード（home.arpa）。Terraform の各ホストと対応。
+dns_records:
+  - { ip: "192.168.0.110", name: "k3s-server-1" }
+  - { ip: "192.168.0.111", name: "k3s-agent-1" }
+  - { ip: "192.168.0.112", name: "k3s-agent-2" }
+  - { ip: "192.168.0.120", name: "staging.k3s-server-1" }
+  - { ip: "192.168.0.200", name: "proxmox" }
+  - { ip: "192.168.0.210", name: "openmediavault" }
+  - { ip: "192.168.0.212", name: "vault" }
+  - { ip: "192.168.0.213", name: "dns" }
+  - { ip: "192.168.0.214", name: "monitoring" }
