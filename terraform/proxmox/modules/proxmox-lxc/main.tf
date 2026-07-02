@@ -32,4 +32,14 @@ resource "proxmox_lxc" "this" {
     ip     = var.network_ip
     gw     = var.network_gw
   }
+
+  // ostemplate と ssh_public_keys は作成時のみ有効かつ API から読み戻されない
+  // ForceNew 属性のため、import 済みリソースでは state 上 null となり毎回 replace を
+  // 誘発する。差分を無視して既存コンテナの再作成を防ぐ。
+  lifecycle {
+    ignore_changes = [
+      ostemplate,
+      ssh_public_keys,
+    ]
+  }
 }
