@@ -1,0 +1,96 @@
+---
+# kubectl / flux はコントロールノードで実行する（delegate_to: localhost）。使い方は README を参照。
+- name: Bootstrap Flux CD
+  hosts: k3s_cluster_server
+  gather_facts: false
+  vars:
+    repo_root: "{{ playbook_dir }}/.."
+    flux_github_user: "{{ lookup('ansible.builtin.env', 'GITHUB_USER') }}"
+    flux_github_token: "{{ lookup('ansible.builtin.env', 'GITHUB_TOKEN') }}"
+    flux_kubeconfig: "{{ repo_root }}/.kube/{{ flux_cluster }}.yaml"
+    flux_system_path: "{{ repo_root }}/kubernetes/clusters/{{ flux_cluster }}/flux-system"
+
+  tasks:
+    - name: Ensure GitHub credentials are provided via environment
+      ansible.builtin.assert:
+        that:
+          - flux_github_user | length > 0
+          - flux_github_token | length > 0
+        fail_msg: >-
+          GITHUB_USER と GITHUB_TOKEN を環境変数で設定してください（例: direnv / .env）。
+        quiet: true
+
+    - name: Read kubeconfig from the K3s server
+      ansible.builtin.slurp:
+        src: /etc/rancher/k3s/k3s.yaml
+      register: flux_k3s_kubeconfig
+
+    - name: Ensure local kubeconfig directory exists
+      ansible.builtin.file:
+        path: "{{ repo_root }}/.kube"
+        state: directory
+        mode: "0700"
+      delegate_to: localhost
+
+    - name: Write kubeconfig to control node with node address
+      ansible.builtin.copy:
+        content: >-
+          {{ flux_k3s_kubeconfig.content | b64decode
+             | replace('https://127.0.0.1:6443', 'https://' ~ inventory_hostname ~ ':6443') }}
+        dest: "{{ flux_kubeconfig }}"
+        mode: "0600"
+      delegate_to: localhost
+
+    # CRD 登録前にインスタンス適用が走ると失敗するため、components を一括 apply せず
+    # CRD → 待機 → インスタンス(sync) の順に分割する
+    - name: Install Flux controllers and CRDs (gotk-components)
+      ansible.builtin.command:
+        cmd: >-
+          kubectl --kubeconfig {{ flux_kubeconfig | quote }}
+          apply -f {{ (flux_system_path ~ '/gotk-components.yaml') | quote }}
+      register: flux_components
+      changed_when: "'created' in flux_components.stdout or 'configured' in flux_components.stdout"
+      delegate_to: localhost
+
+    - name: Wait for Flux CRDs to be established
+      ansible.builtin.command:
+        cmd: >-
+          kubectl --kubeconfig {{ flux_kubeconfig | quote }}
+          wait --for=condition=established --timeout=60s
+          crd/gitrepositories.source.toolkit.fluxcd.io
+          crd/kustomizations.kustomize.toolkit.fluxcd.io
+      changed_when: false
+      delegate_to: localhost
+
+    - name: Apply Flux sync manifests (gotk-sync)
+      ansible.builtin.command:
+        cmd: >-
+          kubectl --kubeconfig {{ flux_kubeconfig | quote }}
+          apply -f {{ (flux_system_path ~ '/gotk-sync.yaml') | quote }}
+      register: flux_sync
+      changed_when: "'created' in flux_sync.stdout or 'configured' in flux_sync.stdout"
+      delegate_to: localhost
+
+    - name: Create flux-system Git credentials secret
+      ansible.builtin.shell:
+        cmd: >-
+          set -o pipefail
+          && kubectl --kubeconfig {{ flux_kubeconfig | quote }} create secret generic flux-system
+          --namespace flux-system
+          --from-literal=username={{ flux_github_user | quote }}
+          --from-literal=password={{ flux_github_token | quote }}
+          --dry-run=client -o yaml
+          | kubectl --kubeconfig {{ flux_kubeconfig | quote }} apply -f -
+        executable: /bin/bash
+      register: flux_secret
+      changed_when: "'created' in flux_secret.stdout or 'configured' in flux_secret.stdout"
+      no_log: true
+      delegate_to: localhost
+
+    - name: Reconcile flux-system Git source
+      ansible.builtin.command:
+        cmd: >-
+          flux --kubeconfig {{ flux_kubeconfig | quote }}
+          reconcile source git flux-system
+      changed_when: true
+      delegate_to: localhost

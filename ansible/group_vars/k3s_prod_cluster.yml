@@ -2,3 +2,5 @@
 # token: "changeme!"
 api_endpoint: "{{ hostvars[groups['k3s_prod_cluster_server'][0]]['ansible_host'] | default(groups['k3s_prod_cluster_server'][0]) }}"
 server_group: "k3s_prod_cluster_server"
+# site_flux.yml が参照する Flux クラスターディレクトリ (kubernetes/clusters/<name>)
+flux_cluster: "production"
