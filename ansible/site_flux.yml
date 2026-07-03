@@ -1,13 +1,5 @@
 ---
-# Flux CD のブートストラップを自動化する。
-# gotk-components / gotk-sync は kubernetes/ 配下に既にコミット済みなので、
-# ここでは「コントローラの適用 → Git 認証シークレット作成 → reconcile」だけを行う。
-# kubectl / flux はコントロールノード（Nix devshell）で実行する（delegate_to: localhost）。
-#
-# 事前準備:
-#   export GITHUB_USER=<owner>
-#   export GITHUB_TOKEN=<PAT>   # Contents 読み取り権限
-#   ansible-playbook site_flux.yml
+# kubectl / flux はコントロールノードで実行する（delegate_to: localhost）。使い方は README を参照。
 - name: Bootstrap Flux CD
   hosts: k3s_cluster_server
   gather_facts: false
@@ -49,10 +41,8 @@
         mode: "0600"
       delegate_to: localhost
 
-    # gotk-components(CRD+コントローラ) と gotk-sync(GitRepository/Kustomization
-    # インスタンス) を一括 apply すると、CRD 登録前にインスタンス適用が走り
-    # "no matches for kind ... ensure CRDs are installed first" で失敗する。
-    # CRD → 待機 → インスタンス の順で適用する。
+    # CRD 登録前にインスタンス適用が走ると失敗するため、components を一括 apply せず
+    # CRD → 待機 → インスタンス(sync) の順に分割する
     - name: Install Flux controllers and CRDs (gotk-components)
       ansible.builtin.command:
         cmd: >-
