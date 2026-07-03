@@ -49,13 +49,36 @@
         mode: "0600"
       delegate_to: localhost
 
-    - name: Install Flux controllers (kubectl apply -k)
+    # gotk-components(CRD+コントローラ) と gotk-sync(GitRepository/Kustomization
+    # インスタンス) を一括 apply すると、CRD 登録前にインスタンス適用が走り
+    # "no matches for kind ... ensure CRDs are installed first" で失敗する。
+    # CRD → 待機 → インスタンス の順で適用する。
+    - name: Install Flux controllers and CRDs (gotk-components)
       ansible.builtin.command:
         cmd: >-
           kubectl --kubeconfig {{ flux_kubeconfig | quote }}
-          apply -k {{ flux_system_path | quote }}
-      register: flux_apply
-      changed_when: "'created' in flux_apply.stdout or 'configured' in flux_apply.stdout"
+          apply -f {{ (flux_system_path ~ '/gotk-components.yaml') | quote }}
+      register: flux_components
+      changed_when: "'created' in flux_components.stdout or 'configured' in flux_components.stdout"
+      delegate_to: localhost
+
+    - name: Wait for Flux CRDs to be established
+      ansible.builtin.command:
+        cmd: >-
+          kubectl --kubeconfig {{ flux_kubeconfig | quote }}
+          wait --for=condition=established --timeout=60s
+          crd/gitrepositories.source.toolkit.fluxcd.io
+          crd/kustomizations.kustomize.toolkit.fluxcd.io
+      changed_when: false
+      delegate_to: localhost
+
+    - name: Apply Flux sync manifests (gotk-sync)
+      ansible.builtin.command:
+        cmd: >-
+          kubectl --kubeconfig {{ flux_kubeconfig | quote }}
+          apply -f {{ (flux_system_path ~ '/gotk-sync.yaml') | quote }}
+      register: flux_sync
+      changed_when: "'created' in flux_sync.stdout or 'configured' in flux_sync.stdout"
       delegate_to: localhost
 
     - name: Create flux-system Git credentials secret
