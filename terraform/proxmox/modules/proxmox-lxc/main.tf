@@ -32,4 +32,13 @@ resource "proxmox_lxc" "this" {
     ip     = var.network_ip
     gw     = var.network_gw
   }
+
+  lifecycle {
+    ignore_changes = [
+      ostemplate,
+      ssh_public_keys,
+      vmid,
+      rootfs["storage"],
+    ]
+  }
 }
