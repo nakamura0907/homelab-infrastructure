@@ -1,0 +1,44 @@
+---
+# インフラノード(非K3s)向けの各種exporter / ログ収集エージェント
+# LXCのPrometheus(192.168.0.214)から収集する対象を用意する
+
+- name: Setup Node Exporter
+  hosts: infra_nodes
+  roles:
+    - prometheus.prometheus.node_exporter
+
+- name: Setup Smartctl Exporter (NAS)
+  hosts: 192.168.0.210
+  roles:
+    - prometheus.prometheus.smartctl_exporter
+
+- name: Setup Blackbox Exporter
+  hosts: 192.168.0.214
+  vars:
+    blackbox_exporter_configuration_modules:
+      http_2xx:
+        prober: http
+        timeout: 5s
+        http:
+          method: GET
+          preferred_ip_protocol: ip4
+          valid_status_codes: []
+      icmp:
+        prober: icmp
+        timeout: 5s
+        icmp:
+          preferred_ip_protocol: ip4
+      dns_home_arpa:
+        prober: dns
+        timeout: 5s
+        dns:
+          query_name: monitoring.home.arpa
+          query_type: A
+          preferred_ip_protocol: ip4
+  roles:
+    - prometheus.prometheus.blackbox_exporter
+
+- name: Setup Grafana Alloy (log shipping to Loki)
+  hosts: infra_nodes
+  roles:
+    - grafana.grafana.alloy

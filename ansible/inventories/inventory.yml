@@ -40,3 +40,12 @@ monitoring:
 dns:
   hosts:
     192.168.0.213:
+# 監視対象のインフラノード（非K3s）: node_exporter / ログ収集(Alloy)を導入する
+# ※ K3sノードはkube-prometheus-stackで収集済みのため含めない
+# ※ Proxmoxホストは監視対象外
+infra_nodes:
+  hosts:
+    192.168.0.210:  # OpenMediaVault (NAS)
+    192.168.0.212:  # Vault (secret-manager)
+    192.168.0.213:  # DNS (Pi-hole + Unbound)
+    192.168.0.214:  # monitoring (Prometheus/Grafana自身)
