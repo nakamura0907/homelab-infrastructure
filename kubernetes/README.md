@@ -2,6 +2,19 @@
 
 ## Flux CD
 
+### Ansible で自動ブートストラップ（推奨）
+
+以下の手動手順は `ansible/site_flux.yml` で自動化済み。詳細は `ansible/README.md` を参照。
+
+```bash
+export GITHUB_USER=<owner>
+export GITHUB_TOKEN=<token>
+
+ansible-playbook site_flux.yml
+```
+
+### 手動での手順
+
 初回は`flux bootstrap`コマンドを実行する。
 
 - Flux CLIコマンドがインストール済み
@@ -29,7 +42,7 @@ flux bootstrap github \
 ```bash
 kubectl apply -k ./kubernetes/clusters/production/flux-system
 
-# ここを改善したい
+# site_flux.yml で自動化済み
 kubectl create secret generic flux-system \
   --namespace=flux-system \
   --from-literal=username="$GITHUB_USER" \

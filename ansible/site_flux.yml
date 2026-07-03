@@ -1,0 +1,83 @@
+---
+# Flux CD のブートストラップを自動化する。
+# gotk-components / gotk-sync は kubernetes/ 配下に既にコミット済みなので、
+# ここでは「コントローラの適用 → Git 認証シークレット作成 → reconcile」だけを行う。
+# kubectl / flux はコントロールノード（Nix devshell）で実行する（delegate_to: localhost）。
+#
+# 事前準備:
+#   export GITHUB_USER=<owner>
+#   export GITHUB_TOKEN=<PAT>   # Contents 読み取り権限
+#   ansible-playbook site_flux.yml
+- name: Bootstrap Flux CD
+  hosts: k3s_cluster_server
+  gather_facts: false
+  vars:
+    repo_root: "{{ playbook_dir }}/.."
+    flux_github_user: "{{ lookup('ansible.builtin.env', 'GITHUB_USER') }}"
+    flux_github_token: "{{ lookup('ansible.builtin.env', 'GITHUB_TOKEN') }}"
+    flux_kubeconfig: "{{ repo_root }}/.kube/{{ flux_cluster }}.yaml"
+    flux_system_path: "{{ repo_root }}/kubernetes/clusters/{{ flux_cluster }}/flux-system"
+
+  tasks:
+    - name: Ensure GitHub credentials are provided via environment
+      ansible.builtin.assert:
+        that:
+          - flux_github_user | length > 0
+          - flux_github_token | length > 0
+        fail_msg: >-
+          GITHUB_USER と GITHUB_TOKEN を環境変数で設定してください（例: direnv / .env）。
+        quiet: true
+
+    - name: Read kubeconfig from the K3s server
+      ansible.builtin.slurp:
+        src: /etc/rancher/k3s/k3s.yaml
+      register: flux_k3s_kubeconfig
+
+    - name: Ensure local kubeconfig directory exists
+      ansible.builtin.file:
+        path: "{{ repo_root }}/.kube"
+        state: directory
+        mode: "0700"
+      delegate_to: localhost
+
+    - name: Write kubeconfig to control node with node address
+      ansible.builtin.copy:
+        content: >-
+          {{ flux_k3s_kubeconfig.content | b64decode
+             | replace('https://127.0.0.1:6443', 'https://' ~ inventory_hostname ~ ':6443') }}
+        dest: "{{ flux_kubeconfig }}"
+        mode: "0600"
+      delegate_to: localhost
+
+    - name: Install Flux controllers (kubectl apply -k)
+      ansible.builtin.command:
+        cmd: >-
+          kubectl --kubeconfig {{ flux_kubeconfig | quote }}
+          apply -k {{ flux_system_path | quote }}
+      register: flux_apply
+      changed_when: "'created' in flux_apply.stdout or 'configured' in flux_apply.stdout"
+      delegate_to: localhost
+
+    - name: Create flux-system Git credentials secret
+      ansible.builtin.shell:
+        cmd: >-
+          set -o pipefail
+          && kubectl --kubeconfig {{ flux_kubeconfig | quote }} create secret generic flux-system
+          --namespace flux-system
+          --from-literal=username={{ flux_github_user | quote }}
+          --from-literal=password={{ flux_github_token | quote }}
+          --dry-run=client -o yaml
+          | kubectl --kubeconfig {{ flux_kubeconfig | quote }} apply -f -
+        executable: /bin/bash
+      register: flux_secret
+      changed_when: "'created' in flux_secret.stdout or 'configured' in flux_secret.stdout"
+      no_log: true
+      delegate_to: localhost
+
+    - name: Reconcile flux-system Git source
+      ansible.builtin.command:
+        cmd: >-
+          flux --kubeconfig {{ flux_kubeconfig | quote }}
+          reconcile source git flux-system
+      changed_when: true
+      delegate_to: localhost
