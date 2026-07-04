@@ -48,7 +48,8 @@ task terraform:proxmox:apply
 # 2. CAパスワードを設定(.envに追記。紛失しないこと)
 #    STEP_CA_PASSWORD="<強力なパスワード>"
 
-# 3. CA構築 + 全管理ホストへルートCA配布
+# 3. CA構築 + 全管理ホストへルートCA配布 + cluster-issuer-vars ConfigMap投入
+#    (ルートCAはconfigmap経由でFluxがcaBundleへ注入するため、コミットは不要)
 task ansible:run -- site_pki.yml
 
 # 4. DNSレコード反映(ca/pihole/grafana/homepage等) + Pi-hole管理UIのTLS終端
@@ -57,14 +58,17 @@ task ansible:run -- site_dns.yml
 # 5. Grafana/Prometheus前段のTLS終端
 task ansible:run -- site_monitoring.yml
 
-# 6. ClusterIssuerにルートCAを差し込んでコミット(公開情報なのでコミット可)
-ssh root@192.168.0.211 cat /etc/step-ca/certs/root_ca.crt > root_ca.crt
-base64 -w0 root_ca.crt  # → kubernetes/infrastructure/cert-manager-issuers/cluster-issuer.yaml の caBundle へ
-
-# 7. Fluxが cert-manager / traefik / homepage Ingress を反映するのを確認
+# 6. Fluxが cert-manager / traefik / homepage Ingress を反映するのを確認
 flux get kustomizations
 kubectl get certificate -A
 ```
+
+> **ルートCAのcaBundle注入について**
+> ClusterIssuerの `caBundle` はGitに固定のプレースホルダ `${ROOT_CA_B64}` だけを置き、
+> 実値は site_pki.yml が作成する `flux-system/cluster-issuer-vars` ConfigMap から
+> Flux(`postBuild.substituteFrom`)が注入する。ルートCAは公開情報なのでConfigMapで扱える。
+> 環境固有・再生成される値をGit外に保つため、**CA再構築時も site_pki.yml を流し直すだけでコミット不要**。
+> ConfigMap投入前はcert-manager-issuers Kustomizationが解決失敗しリトライするが、投入後に自動収束する。
 
 ## ルートCA証明書のクライアント配布
 

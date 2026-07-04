@@ -41,3 +41,49 @@
       ansible.builtin.command:
         cmd: update-ca-certificates
       changed_when: true
+
+# ルートCA(公開情報)をflux-system/cluster-issuer-vars ConfigMapに投入し、
+# FluxのpostBuild.substituteFromでClusterIssuerのcaBundleへ注入させる。
+# 実値をGitに置かないため、CA再構築時もこのplayを流し直すだけでコミット不要。
+# kubectlはコントロールノード(localhost)で実行する。使い方はsite_flux.yml / README参照。
+- name: Seed the root CA into the cluster for cert-manager
+  hosts: k3s_prod_cluster_server
+  gather_facts: false
+  vars:
+    repo_root: "{{ playbook_dir }}/.."
+    pki_kubeconfig: "{{ repo_root }}/.kube/pki-seed.yaml"
+  tasks:
+    - name: Read the root certificate from the CA host
+      ansible.builtin.slurp:
+        src: /etc/step-ca/certs/root_ca.crt
+      delegate_to: "{{ groups['pki'][0] }}"
+      register: pki_seed_root_ca
+
+    - name: Read kubeconfig from the K3s server
+      ansible.builtin.slurp:
+        src: /etc/rancher/k3s/k3s.yaml
+      register: pki_seed_kubeconfig
+
+    - name: Write kubeconfig to control node with node address
+      ansible.builtin.copy:
+        content: >-
+          {{ pki_seed_kubeconfig.content | b64decode
+             | replace('https://127.0.0.1:6443', 'https://' ~ inventory_hostname ~ ':6443') }}
+        dest: "{{ pki_kubeconfig }}"
+        mode: "0600"
+      delegate_to: localhost
+
+    # slurpのcontentは既にbase64。caBundleが要求するbase64エンコードPEMと一致する
+    - name: Create/update cluster-issuer-vars ConfigMap with the root CA
+      ansible.builtin.shell:
+        cmd: >-
+          set -o pipefail
+          && kubectl --kubeconfig {{ pki_kubeconfig | quote }} create configmap cluster-issuer-vars
+          --namespace flux-system
+          --from-literal=ROOT_CA_B64={{ pki_seed_root_ca.content | quote }}
+          --dry-run=client -o yaml
+          | kubectl --kubeconfig {{ pki_kubeconfig | quote }} apply -f -
+        executable: /bin/bash
+      register: pki_seed_cm
+      changed_when: "'created' in pki_seed_cm.stdout or 'configured' in pki_seed_cm.stdout"
+      delegate_to: localhost
