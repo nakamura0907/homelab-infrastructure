@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+{
+	acme_ca {{ caddy_acme_ca }}
+	acme_ca_root {{ caddy_acme_ca_root }}
+}
+
+{% for site in caddy_sites %}
+{{ site.domain }} {
+	reverse_proxy {{ site.upstream }}
+}
+
+{% endfor %}

@@ -1,0 +1,7 @@
+---
+# Grafana/Prometheus前段のTLS終端(Caddy)。証明書は内部CA(step-ca)からACMEで自動取得する
+caddy_sites:
+  - domain: grafana.home.arpa
+    upstream: localhost:3000
+  - domain: prometheus.home.arpa
+    upstream: localhost:9090

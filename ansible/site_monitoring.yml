@@ -8,3 +8,9 @@
   hosts: grafana
   roles:
     - grafana.grafana.grafana
+
+# Grafana/Prometheus前段のTLS終端(https://grafana.home.arpa / https://prometheus.home.arpa)
+- name: Setup TLS reverse proxy (Caddy)
+  hosts: monitoring
+  roles:
+    - caddy

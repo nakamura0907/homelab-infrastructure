@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+{
+	acme_ca https://ca.home.arpa/acme/acme/directory
+	acme_ca_root /etc/caddy/root_ca.crt
+}
+
+pihole.home.arpa {
+	redir / /admin 302
+	reverse_proxy pihole:80
+}
