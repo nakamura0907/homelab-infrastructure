@@ -21,6 +21,7 @@
             terraform
             kubectl kubernetes-helm fluxcd
             ansible
+            gnutar
             go-task
           ];
           shellHook = ''
