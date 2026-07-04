@@ -5,7 +5,6 @@ metadata:
   name: homepage
   namespace: homepage
   annotations:
-    # 内部CA(step-ca)からACMEで証明書を自動発行する
     cert-manager.io/cluster-issuer: step-ca
 spec:
   ingressClassName: traefik

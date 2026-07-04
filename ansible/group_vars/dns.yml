@@ -17,9 +17,9 @@ dns_internal_subnet: "172.20.0.0/24"
 dns_unbound_ip: "172.20.0.2"
 dns_pihole_ip: "172.20.0.3"
 
-# Pi-hole管理UIのTLS終端(Caddy)
+# Pi-hole管理UIをTLS終端するCaddyコンテナ
 dns_caddy_ip: "172.20.0.4"
-# 内部CA(step-ca)のIP。CaddyコンテナがACMEサーバー名を解決するためextra_hostsで固定する
+# CaddyコンテナがACMEサーバー名を解決するためextra_hostsで固定する
 pki_host_ip: "192.168.0.211"
 
 # 使用イメージ（pihole は現行 K8s と同タグ）
@@ -27,9 +27,7 @@ pihole_image: "pihole/pihole:2024.07.0"
 unbound_image: "mvance/unbound:latest"
 caddy_image: "caddy:2"
 
-# 内部Aレコード（home.arpa）。Terraform の各ホストと対応。
-# サービス用FQDN(pihole/grafana等)は稼働ホストのIPを指す。
-# homepage/authはK3s上のTraefik Ingress(MetalLB .230)を指す。
+# 内部Aレコード（home.arpa）。homepage/auth は Traefik Ingress(.230)を指す。
 dns_records:
   - { ip: "192.168.0.110", name: "k3s-server-1" }
   - { ip: "192.168.0.111", name: "k3s-agent-1" }
@@ -45,5 +43,4 @@ dns_records:
   - { ip: "192.168.0.214", name: "grafana" }
   - { ip: "192.168.0.214", name: "prometheus" }
   - { ip: "192.168.0.230", name: "homepage" }
-  # IdP(Authelia)用に予約。デプロイは次フェーズ
-  - { ip: "192.168.0.230", name: "auth" }
+  - { ip: "192.168.0.230", name: "auth" } # IdP(Authelia)用に予約

@@ -58,7 +58,7 @@
           このパスワードはルート/中間CA鍵の暗号化に使われるため紛失しないこと。
         quiet: true
 
-    # systemd起動時の中間CA鍵の復号にも使うため、初期化後もファイルとして保持する
+    # systemd起動時の中間CA鍵の復号にも使うため保持する
     - name: Write the CA password file
       ansible.builtin.copy:
         content: "{{ step_ca_password }}"
@@ -68,7 +68,7 @@
         mode: "0600"
       no_log: true
 
-    # sudo非搭載の最小LXCでも動くようroot(接続ユーザー)で実行し、後段でstepユーザーへchownする
+    # rootで実行し後段でstepへchownする(sudo非搭載の最小LXCでも動くように)
     - name: Initialize root/intermediate CA with ACME provisioner
       ansible.builtin.command:
         cmd: >-
@@ -124,14 +124,12 @@
   register: step_ca_fingerprint
   changed_when: false
 
-# クライアントが `step ca bootstrap --fingerprint` で安全にルートCAを取得する際に使う
+# `step ca bootstrap --fingerprint` での安全な取得に使う
 - name: Display the root certificate fingerprint
   ansible.builtin.debug:
     msg: "Root CA fingerprint: {{ step_ca_fingerprint.stdout }}"
 
-# --- ルートCA(公開情報)の平文HTTP配布口 ---
-# 初回はまだルートを信頼していないため HTTPS だと鶏と卵になる。平文HTTPで配る。
-# step-ca は :443、この配布口は :80 で競合しない。
+# ルートCA配布は平文HTTP(:80)。未信頼の初回はHTTPSだと鶏と卵になるため
 - name: Ensure python3 is available for the distribution server
   ansible.builtin.apt:
     name: python3

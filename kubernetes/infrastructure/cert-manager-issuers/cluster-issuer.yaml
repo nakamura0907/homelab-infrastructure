@@ -5,15 +5,11 @@ metadata:
   name: step-ca
 spec:
   acme:
-    # 内部CA(step-ca)のACMEディレクトリ
     server: https://ca.home.arpa/acme/acme/directory
-    # step-caのルートCA証明書(公開情報)をbase64エンコードした値。
-    # 実値はGitに置かず、Ansible(site_pki.yml)が作成するflux-system/cluster-issuer-vars
-    # ConfigMapから、FluxのpostBuild.substituteFromで注入する(kubernetes/clusters/production/infrastructure.yaml参照)。
-    # ConfigMap未作成の間はcert-manager-issuers Kustomizationが解決失敗しリトライするが、他への影響はない。
+    # ルートCA(公開情報)を site_pki.yml 作成の cluster-issuer-vars ConfigMap から
+    # Flux の postBuild.substituteFrom で注入する(実値をGitに置かないため)
     caBundle: "${ROOT_CA_B64}"
     privateKeySecretRef:
-      # ACMEアカウント鍵はcert-managerがクラスタ内Secretとして自動生成する(コミット不要)
       name: step-ca-acme-account
     solvers:
       - http01:

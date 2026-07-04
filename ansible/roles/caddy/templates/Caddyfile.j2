@@ -1,8 +1,8 @@
 # {{ ansible_managed }}
 {% for site in caddy_sites %}
 {{ site.domain }} {
-	# home.arpa は非公開ドメインのため、Caddy は既定で内蔵の local issuer(自己署名)を
-	# 選んでしまう。内部CA(step-ca)を使わせるには issuer を明示する必要がある。
+	# home.arpa は非公開ドメインのため Caddy は既定で内蔵の local issuer を選ぶ。
+	# step-ca を使わせるには issuer を明示する必要がある。
 	tls {
 		issuer acme {
 			dir {{ caddy_acme_ca }}

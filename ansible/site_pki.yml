@@ -4,13 +4,11 @@
   roles:
     - step_ca
 
-# 各管理ホストのOS信頼ストアへルートCAを配布する。
-# マシン間TLS通信(Grafana→データソース等)とACMEクライアント(Caddy/acme.sh)の
-# CA接続の信頼に必要。クライアントPC/スマホへの配布手順は docs/pki.md を参照。
+# 各管理ホストのOS信頼ストアへルートCAを配布する(ACMEクライアントのCA接続の信頼に必要)。
+# 端末への配布手順は docs/pki.md を参照。
 - name: Distribute the root CA certificate
   hosts: k3s_cluster:infra_nodes
   tasks:
-    # 各ホストがCAホストから直接ルートCAを読み取る(run_onceを使わずlint慣用ルールを回避)
     - name: Read the root certificate from the CA host
       ansible.builtin.slurp:
         src: /etc/step-ca/certs/root_ca.crt
@@ -29,7 +27,7 @@
         mode: "0644"
       notify: Update CA certificates
 
-    # DNS(.213)停止時でも各ホストの証明書自動更新が継続できるよう、CAの名前解決を固定する
+    # DNS停止時でも証明書更新が継続できるようCAの名前解決を固定する
     - name: Pin ca.home.arpa in /etc/hosts
       ansible.builtin.lineinfile:
         path: /etc/hosts
@@ -42,10 +40,9 @@
         cmd: update-ca-certificates
       changed_when: true
 
-# ルートCA(公開情報)をflux-system/cluster-issuer-vars ConfigMapに投入し、
-# FluxのpostBuild.substituteFromでClusterIssuerのcaBundleへ注入させる。
-# 実値をGitに置かないため、CA再構築時もこのplayを流し直すだけでコミット不要。
-# kubectlはコントロールノード(localhost)で実行する。使い方はsite_flux.yml / README参照。
+# ルートCA(公開情報)を cluster-issuer-vars ConfigMap に投入し、Flux の
+# postBuild.substituteFrom で ClusterIssuer の caBundle へ注入させる(実値をGit外に保つ)。
+# kubectl はコントロールノード(localhost)で実行する。
 - name: Seed the root CA into the cluster for cert-manager
   hosts: k3s_prod_cluster_server
   gather_facts: false
@@ -73,7 +70,7 @@
         mode: "0600"
       delegate_to: localhost
 
-    # slurpのcontentは既にbase64。caBundleが要求するbase64エンコードPEMと一致する
+    # slurpのcontentは既にbase64で、caBundleが要求するbase64エンコードPEMと一致する
     - name: Create/update cluster-issuer-vars ConfigMap with the root CA
       ansible.builtin.shell:
         cmd: >-

@@ -38,7 +38,7 @@ services:
       dns_net:
         ipv4_address: {{ dns_pihole_ip }}
 
-  # Pi-hole管理UIのTLS終端。証明書は内部CA(step-ca)からACME(HTTP-01)で自動取得・更新
+  # Pi-hole管理UIをTLS終端(step-caからACMEで自動取得)
   caddy:
     image: {{ caddy_image }}
     container_name: caddy
@@ -55,7 +55,7 @@ services:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./caddy/data:/data
       - ./caddy/config:/config
-      # site_pki.ymlが配布するルートCA(ACMEサーバーへのTLS接続の信頼に必要)
+      # ACME接続の信頼に使うルートCA(site_pki.ymlが配布)
       - /usr/local/share/ca-certificates/homelab-root-ca.crt:/etc/caddy/root_ca.crt:ro
     networks:
       dns_net:

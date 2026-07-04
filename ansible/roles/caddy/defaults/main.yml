@@ -1,12 +1,7 @@
 ---
-# 内部CA(step-ca)のACMEディレクトリ。証明書はここから自動取得・自動更新される
+# 内部CA(step-ca)のACMEディレクトリと、ACME接続を信頼するルートCA(site_pki.ymlが配布)
 caddy_acme_ca: https://ca.home.arpa/acme/acme/directory
-# ACMEサーバーへのTLS接続を信頼するためのルートCA(site_pki.ymlが配布)
 caddy_acme_ca_root: /usr/local/share/ca-certificates/homelab-root-ca.crt
 
-# TLS終端して転送するサイトの一覧
-# 例:
-#   caddy_sites:
-#     - domain: grafana.home.arpa
-#       upstream: localhost:3000
+# TLS終端して転送するサイト: [{ domain: ..., upstream: ... }]
 caddy_sites: []

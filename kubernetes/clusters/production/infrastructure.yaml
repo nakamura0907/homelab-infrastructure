@@ -80,9 +80,7 @@ spec:
     name: flux-system
   path: ./kubernetes/infrastructure/cert-manager-issuers
   prune: true
-  # ClusterIssuerのcaBundle(${ROOT_CA_B64})を、Ansible(site_pki.yml)が作成する
-  # ConfigMapから注入する。ルートCAは公開情報のためConfigMapで扱ってよい。
-  # 環境ごとに変わるルート値をGit外に保つことで、CA再構築時もコミット不要になる。
+  # ClusterIssuerのcaBundle(${ROOT_CA_B64})を、site_pki.yml作成のConfigMapから注入する
   postBuild:
     substituteFrom:
       - kind: ConfigMap
