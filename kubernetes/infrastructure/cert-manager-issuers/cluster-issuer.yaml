@@ -1,0 +1,20 @@
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: step-ca
+spec:
+  acme:
+    # 内部CA(step-ca)のACMEディレクトリ
+    server: https://ca.home.arpa/acme/acme/directory
+    # step-caのルートCA証明書(公開情報)をbase64エンコードした値。
+    # CA構築後に `step ca root root_ca.crt && base64 -w0 root_ca.crt` の出力へ置換してコミットする。
+    # 置換するまでこのClusterIssuerはReadyにならない(ACMEサーバーのTLS検証に失敗する)が、他への影響はない。
+    # caBundle: <BASE64_ENCODED_ROOT_CA>
+    privateKeySecretRef:
+      # ACMEアカウント鍵はcert-managerがクラスタ内Secretとして自動生成する(コミット不要)
+      name: step-ca-acme-account
+    solvers:
+      - http01:
+          ingress:
+            ingressClassName: traefik

@@ -7,10 +7,8 @@ metadata:
 spec:
   selector:
     app.kubernetes.io/instance: homepage
-  type: LoadBalancer
-  loadBalancerIP: 192.168.0.235
-  loadBalancerSourceRanges:
-    - 192.168.0.0/24
+  # 公開はTraefik Ingress(https://homepage.home.arpa)経由に集約したためClusterIPに変更
+  type: ClusterIP
   ports:
     - port: 80
       targetPort: 3000

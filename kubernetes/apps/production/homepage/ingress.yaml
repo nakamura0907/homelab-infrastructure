@@ -1,0 +1,26 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: homepage
+  namespace: homepage
+  annotations:
+    # 内部CA(step-ca)からACMEで証明書を自動発行する
+    cert-manager.io/cluster-issuer: step-ca
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: homepage.home.arpa
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: homepage
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - homepage.home.arpa
+      secretName: homepage-tls
