@@ -1,0 +1,14 @@
+---
+# K3s の CoreDNS は kube-system/coredns-custom ConfigMap を取り込む(*.server は追加のゾーンブロック)。
+# クラスタ内(cert-manager 等)が home.arpa を解決できるよう、DNS LXC(Pi-hole)へ転送する。
+# 既定では CoreDNS はノードの /etc/resolv.conf 上流(ルータ)へ転送し home.arpa を解決できないため。
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+data:
+  home-arpa.server: |
+    home.arpa:53 {
+        forward . 192.168.0.213
+    }

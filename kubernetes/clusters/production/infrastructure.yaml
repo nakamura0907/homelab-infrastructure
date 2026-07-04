@@ -27,6 +27,23 @@ spec:
         name: first-pool
         kind: IPAddressPool
 ---
+# cert-manager が ca.home.arpa を解決できるよう、CoreDNS に home.arpa 転送を先に入れる
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: coredns-custom
+  namespace: flux-system
+spec:
+  interval: 1h
+  retryInterval: 1m
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./kubernetes/infrastructure/coredns-custom
+  prune: true
+
+---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -56,6 +73,8 @@ spec:
   timeout: 5m
   dependsOn:
     - name: cert-manager
+    # ACMEサーバー(ca.home.arpa)の解決に home.arpa 転送が必要
+    - name: coredns-custom
   sourceRef:
     kind: GitRepository
     name: flux-system
