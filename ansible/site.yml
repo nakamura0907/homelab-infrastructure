@@ -2,6 +2,10 @@
 - name: K3s Cluster
   ansible.builtin.import_playbook: site_k3s.yml
 
+# Monitoring/DNSのCaddyがルートCA証明書を参照するため、PKIを先に実行する
+- name: PKI
+  ansible.builtin.import_playbook: site_pki.yml
+
 - name: Monitoring
   ansible.builtin.import_playbook: site_monitoring.yml
 

@@ -1,0 +1,43 @@
+---
+- name: Setup internal CA (step-ca)
+  hosts: pki
+  roles:
+    - step_ca
+
+# 各管理ホストのOS信頼ストアへルートCAを配布する。
+# マシン間TLS通信(Grafana→データソース等)とACMEクライアント(Caddy/acme.sh)の
+# CA接続の信頼に必要。クライアントPC/スマホへの配布手順は docs/pki.md を参照。
+- name: Distribute the root CA certificate
+  hosts: k3s_cluster:infra_nodes
+  tasks:
+    - name: Read the root certificate from the CA host
+      ansible.builtin.slurp:
+        src: /etc/step-ca/certs/root_ca.crt
+      delegate_to: "{{ groups['pki'][0] }}"
+      run_once: true
+      register: pki_root_ca
+
+    - name: Ensure ca-certificates is installed
+      ansible.builtin.apt:
+        name: ca-certificates
+        state: present
+
+    - name: Install the root certificate into the system trust store
+      ansible.builtin.copy:
+        content: "{{ pki_root_ca.content | b64decode }}"
+        dest: /usr/local/share/ca-certificates/homelab-root-ca.crt
+        mode: "0644"
+      notify: Update CA certificates
+
+    # DNS(.213)停止時でも各ホストの証明書自動更新が継続できるよう、CAの名前解決を固定する
+    - name: Pin ca.home.arpa in /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        line: "{{ groups['pki'][0] }} ca.home.arpa"
+        regexp: '\sca\.home\.arpa$'
+
+  handlers:
+    - name: Update CA certificates
+      ansible.builtin.command:
+        cmd: update-ca-certificates
+      changed_when: true
