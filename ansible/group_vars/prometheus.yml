@@ -91,7 +91,8 @@ prometheus_alert_rules:
       severity: warning
     annotations:
       summary: TLS certificate expires within 14 days
-      description: !unsafe "{{ $labels.instance }} の証明書が14日以内に失効します。ACME自動更新の失敗を確認してください。"
+      # {% raw %}〜{% endraw %}でPrometheusのテンプレート構文をJinjaから保護する
+      description: "{% raw %}{{ $labels.instance }}{% endraw %} の証明書が14日以内に失効します。ACME自動更新の失敗を確認してください。"
   # 外形監視の失敗
   - alert: BlackboxProbeFailed
     expr: probe_success == 0
@@ -100,4 +101,4 @@ prometheus_alert_rules:
       severity: critical
     annotations:
       summary: Blackbox probe failed
-      description: !unsafe "{{ $labels.instance }} への外形監視が失敗しています。"
+      description: "{% raw %}{{ $labels.instance }}{% endraw %} への外形監視が失敗しています。"

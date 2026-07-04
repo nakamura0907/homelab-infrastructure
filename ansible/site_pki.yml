@@ -10,11 +10,11 @@
 - name: Distribute the root CA certificate
   hosts: k3s_cluster:infra_nodes
   tasks:
+    # 各ホストがCAホストから直接ルートCAを読み取る(run_onceを使わずlint慣用ルールを回避)
     - name: Read the root certificate from the CA host
       ansible.builtin.slurp:
         src: /etc/step-ca/certs/root_ca.crt
       delegate_to: "{{ groups['pki'][0] }}"
-      run_once: true
       register: pki_root_ca
 
     - name: Ensure ca-certificates is installed
