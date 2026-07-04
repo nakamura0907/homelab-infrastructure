@@ -7,6 +7,7 @@ resource "proxmox_lxc" "this" {
   cpuunits        = var.cpuunits
   hostname        = var.hostname
   memory          = var.memory
+  nameserver      = var.nameserver
   onboot          = var.onboot
   password        = var.password
   ssh_public_keys = var.ssh_public_keys

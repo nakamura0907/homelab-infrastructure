@@ -300,3 +300,41 @@ variable "dns_vmid" {
   type    = number
   default = 213
 }
+
+// LXC - PKI (step-ca 内部CA)
+variable "pki_cpuunits" {
+  type    = number
+  default = 1024
+}
+variable "pki_hostname" {
+  type    = string
+  default = "ca"
+}
+variable "pki_memory" {
+  type    = number
+  default = 512
+}
+variable "pki_onboot" {
+  type    = bool
+  default = true
+}
+variable "pki_network_ip" {
+  type    = string
+  default = "192.168.0.211/24"
+}
+variable "pki_nameserver" {
+  type    = string
+  default = "192.168.0.213 192.168.0.1"
+}
+variable "pki_rootfs_size" {
+  type    = string
+  default = "8G"
+}
+variable "pki_swap" {
+  type    = number
+  default = 512
+}
+variable "pki_vmid" {
+  type    = number
+  default = 211
+}

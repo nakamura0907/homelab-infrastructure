@@ -45,6 +45,12 @@ variable "memory" {
   default     = null
 }
 
+variable "nameserver" {
+  description = "The DNS server IP address used by the container. Space-separated list for fallback (e.g. '192.168.0.213 192.168.0.1')."
+  type        = string
+  default     = null
+}
+
 variable "network_name" {
   description = "(required) - The name of the network interface as seen from inside the container."
   type        = string

@@ -213,3 +213,25 @@ module "dns" {
   features_nesting = true
   features_keyctl  = true
 }
+
+// PKI (step-ca 内部CA)
+module "pki" {
+  source = "./modules/proxmox-lxc"
+
+  target_node = var.target_node
+
+  ostemplate      = var.lxc_ostemplate
+  cpuunits        = var.pki_cpuunits
+  hostname        = var.pki_hostname
+  memory          = var.pki_memory
+  onboot          = var.pki_onboot
+  network_ip      = var.pki_network_ip
+  network_gw      = var.lxc_gw
+  rootfs_size     = var.pki_rootfs_size
+  ssh_public_keys = var.sshkeys
+  swap            = var.pki_swap
+  vmid            = var.pki_vmid
+
+  // HTTP-01検証でstep-ca自身がhome.arpa名を解決するため、DNS LXCを優先しルーターへフォールバック
+  nameserver = var.pki_nameserver
+}
