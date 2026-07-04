@@ -22,15 +22,15 @@ data:
     - My Apps:
       - Proxmox:
           icon: proxmox
-          href: https://192.168.0.200:8006
+          href: https://proxmox.home.arpa:8006
           description: Virtualization
       - Pi-hole:
           icon: pi-hole
-          href: http://192.168.0.213/admin
+          href: https://pihole.home.arpa/admin
           description: Network-wide Ad Blocking
       - Grafana:
           icon: grafana
-          href: http://192.168.0.214:3000/
+          href: https://grafana.home.arpa/
           description: Analytics and Monitoring
   kubernetes.yaml: |
     {}

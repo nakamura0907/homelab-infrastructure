@@ -8,3 +8,8 @@
   hosts: grafana
   roles:
     - grafana.grafana.grafana
+
+- name: Setup TLS reverse proxy (Caddy)
+  hosts: monitoring
+  roles:
+    - caddy

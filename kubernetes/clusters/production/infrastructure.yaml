@@ -26,3 +26,81 @@ spec:
       target:
         name: first-pool
         kind: IPAddressPool
+---
+# cert-manager が ca.home.arpa を解決できるよう、CoreDNS に home.arpa 転送を先に入れる
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: coredns-custom
+  namespace: flux-system
+spec:
+  interval: 1h
+  retryInterval: 1m
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./kubernetes/infrastructure/coredns-custom
+  prune: true
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager
+  namespace: flux-system
+spec:
+  interval: 1h
+  retryInterval: 1m
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./kubernetes/infrastructure/cert-manager
+  prune: true
+  wait: true
+
+---
+# ClusterIssuerはcert-managerのCRD登録後でないと適用できないため分離する
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager-issuers
+  namespace: flux-system
+spec:
+  interval: 1h
+  retryInterval: 1m
+  timeout: 5m
+  dependsOn:
+    - name: cert-manager
+    # ACMEサーバー(ca.home.arpa)の解決に home.arpa 転送が必要
+    - name: coredns-custom
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./kubernetes/infrastructure/cert-manager-issuers
+  prune: true
+  # ClusterIssuerのcaBundle(${ROOT_CA_B64})を、site_pki.yml作成のConfigMapから注入する
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: cluster-issuer-vars
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: traefik
+  namespace: flux-system
+spec:
+  interval: 1h
+  retryInterval: 1m
+  timeout: 5m
+  dependsOn:
+    - name: metallb-system
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./kubernetes/infrastructure/traefik
+  prune: true
+  wait: true

@@ -9,3 +9,6 @@ diagram_pihole.png
 .envrc
 .env
 .direnv
+
+# ansible-lint / ansible-galaxy のローカルキャッシュ
+.ansible/

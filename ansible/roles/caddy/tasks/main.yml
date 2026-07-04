@@ -1,0 +1,51 @@
+---
+- name: Ensure the root CA certificate is present
+  ansible.builtin.stat:
+    path: "{{ caddy_acme_ca_root }}"
+  register: caddy_root_ca
+
+- name: Assert the root CA certificate has been distributed
+  ansible.builtin.assert:
+    that:
+      - caddy_root_ca.stat.exists
+    fail_msg: ルートCA証明書がありません。先に site_pki.yml を実行してください。
+    quiet: true
+
+- name: Ensure apt keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Install caddy apt repository signing key
+  ansible.builtin.get_url:
+    url: https://dl.cloudsmith.io/public/caddy/stable/gpg.key
+    dest: /etc/apt/keyrings/caddy-stable.asc
+    mode: "0644"
+
+- name: Add caddy apt repository
+  ansible.builtin.apt_repository:
+    repo: deb [signed-by=/etc/apt/keyrings/caddy-stable.asc] https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main
+    filename: caddy-stable
+    state: present
+
+- name: Install caddy
+  ansible.builtin.apt:
+    name: caddy
+    state: present
+    update_cache: true
+
+- name: Deploy Caddyfile
+  ansible.builtin.template:
+    src: Caddyfile.j2
+    dest: /etc/caddy/Caddyfile
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload caddy
+
+- name: Enable and start caddy
+  ansible.builtin.systemd:
+    name: caddy
+    enabled: true
+    state: started

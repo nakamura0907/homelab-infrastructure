@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+pihole.home.arpa {
+	# home.arpa は非公開ドメインのため Caddy は既定で内蔵の local issuer を選ぶ。
+	# step-ca を使わせるには issuer を明示する必要がある。
+	tls {
+		issuer acme {
+			dir https://ca.home.arpa/acme/acme/directory
+			trusted_roots /etc/caddy/root_ca.crt
+		}
+	}
+	redir / /admin 302
+	reverse_proxy pihole:80
+}

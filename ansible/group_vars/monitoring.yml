@@ -1,0 +1,7 @@
+---
+# Caddyで前段TLS終端する対象
+caddy_sites:
+  - domain: grafana.home.arpa
+    upstream: localhost:3000
+  - domain: prometheus.home.arpa
+    upstream: localhost:9090

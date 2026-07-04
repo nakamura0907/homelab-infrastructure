@@ -17,6 +17,7 @@ prometheus_scrape_configs:
     static_configs:
       - targets:
           - "192.168.0.210:9100" # openmediavault
+          - "192.168.0.211:9100" # pki (step-ca)
           - "192.168.0.212:9100" # vault
           - "192.168.0.213:9100" # dns
           - "192.168.0.214:9100" # monitoring
@@ -25,17 +26,18 @@ prometheus_scrape_configs:
     static_configs:
       - targets:
           - "192.168.0.210:9633" # openmediavault
-  # 外形監視(blackbox_exporter): HTTP疎通
+  # 外形監視(blackbox_exporter): HTTP疎通。https対象はTLS検証も兼ねる
   - job_name: "blackbox-http"
     metrics_path: /probe
     params:
       module: [http_2xx]
     static_configs:
       - targets:
-          - http://192.168.0.214:3000 # grafana
-          - http://192.168.0.213/admin # pi-hole (dns lxc)
-          - http://192.168.0.235 # homepage
-          - http://192.168.0.232:9090 # k3s prometheus
+          - https://grafana.home.arpa # grafana
+          - https://pihole.home.arpa/admin # pi-hole
+          - https://homepage.home.arpa # homepage
+          - https://ca.home.arpa/health # step-ca
+          - http://192.168.0.232:9090 # k3s prometheus (TLS対象外)
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -51,6 +53,7 @@ prometheus_scrape_configs:
     static_configs:
       - targets:
           - 192.168.0.210 # openmediavault
+          - 192.168.0.211 # pki (step-ca)
           - 192.168.0.212 # vault
           - 192.168.0.213 # dns
     relabel_configs:
@@ -75,3 +78,24 @@ prometheus_scrape_configs:
         target_label: instance
       - target_label: __address__
         replacement: 192.168.0.214:9115
+
+# この変数を定義するとロールのデフォルトルールを置き換える(Alertmanager未導入のため
+# 通知はなく Prometheus UI /alerts での可視化が目的)。{% raw %}〜{% endraw %}は
+# Prometheusのテンプレート構文をJinjaの解釈から保護するため。
+prometheus_alert_rules:
+  - alert: TLSCertificateExpiringSoon
+    expr: probe_ssl_earliest_cert_expiry - time() < 14 * 24 * 3600
+    for: 1h
+    labels:
+      severity: warning
+    annotations:
+      summary: TLS certificate expires within 14 days
+      description: "{% raw %}{{ $labels.instance }}{% endraw %} の証明書が14日以内に失効します。ACME自動更新の失敗を確認してください。"
+  - alert: BlackboxProbeFailed
+    expr: probe_success == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: Blackbox probe failed
+      description: "{% raw %}{{ $labels.instance }}{% endraw %} への外形監視が失敗しています。"

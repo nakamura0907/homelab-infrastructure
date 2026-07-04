@@ -1,0 +1,37 @@
+---
+# K3s同梱のTraefikは無効化済み(--disable traefik)のため、Ingressコントローラーとして新規に導入する
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: traefik
+  namespace: traefik
+spec:
+  releaseName: traefik
+  chart:
+    spec:
+      chart: traefik
+      sourceRef:
+        kind: HelmRepository
+        name: traefik
+        namespace: traefik
+  interval: 50m
+  values:
+    # 全Ingressを単一IPに集約する(FQDNはDNS LXCのdns_recordsでこのIPへ向ける)
+    service:
+      spec:
+        loadBalancerIP: 192.168.0.230
+      loadBalancerSourceRanges:
+        - 192.168.0.0/24
+    providers:
+      kubernetesIngress:
+        # Ingressのstatusにこのサービスを反映する(Fluxのwait/健全性評価に必要)
+        publishedService:
+          enabled: true
+    # 80→443の全域リダイレクトはACME(HTTP-01)チャレンジとの干渉を検証してから有効化する
+    # ports:
+    #   web:
+    #     redirections:
+    #       entryPoint:
+    #         to: websecure
+    #         scheme: https
+    #         permanent: true

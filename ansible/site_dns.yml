@@ -14,6 +14,13 @@
           - pihole
         state: restarted
 
+    - name: Restart caddy
+      community.docker.docker_compose_v2:
+        project_src: "{{ dns_compose_dir }}"
+        services:
+          - caddy
+        state: restarted
+
   tasks:
     - name: Check whether systemd-resolved is present
       ansible.builtin.stat:
@@ -29,6 +36,19 @@
         enabled: false
       when: dns_resolved_unit.stat.exists
 
+    # CaddyコンテナがルートCAをbind mountするため(ファイル欠如だとDockerがディレクトリを作ってしまう)
+    - name: Check whether the root CA certificate is present
+      ansible.builtin.stat:
+        path: /usr/local/share/ca-certificates/homelab-root-ca.crt
+      register: dns_root_ca
+
+    - name: Assert the root CA certificate has been distributed
+      ansible.builtin.assert:
+        that:
+          - dns_root_ca.stat.exists
+        fail_msg: ルートCA証明書がありません。先に site_pki.yml を実行してください。
+        quiet: true
+
     - name: Create compose project directories
       ansible.builtin.file:
         path: "{{ item }}"
@@ -39,6 +59,7 @@
         - "{{ dns_compose_dir }}/pihole/etc-pihole"
         - "{{ dns_compose_dir }}/pihole/etc-dnsmasq.d"
         - "{{ dns_compose_dir }}/unbound/conf.d"
+        - "{{ dns_compose_dir }}/caddy"
 
     - name: Deploy Pi-hole custom DNS records (home.arpa)
       ansible.builtin.template:
@@ -59,6 +80,13 @@
         src: templates/dns/unbound-home-arpa.conf.j2
         dest: "{{ dns_compose_dir }}/unbound/conf.d/home-arpa.conf"
         mode: "0644"
+
+    - name: Deploy Caddyfile (Pi-hole admin TLS)
+      ansible.builtin.template:
+        src: templates/dns/Caddyfile.j2
+        dest: "{{ dns_compose_dir }}/caddy/Caddyfile"
+        mode: "0644"
+      notify: Restart caddy
 
     - name: Deploy compose file
       ansible.builtin.template:

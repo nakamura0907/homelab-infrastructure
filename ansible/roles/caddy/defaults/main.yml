@@ -1,0 +1,7 @@
+---
+# 内部CA(step-ca)のACMEディレクトリと、ACME接続を信頼するルートCA(site_pki.ymlが配布)
+caddy_acme_ca: https://ca.home.arpa/acme/acme/directory
+caddy_acme_ca_root: /usr/local/share/ca-certificates/homelab-root-ca.crt
+
+# TLS終端して転送するサイト: [{ domain: ..., upstream: ... }]
+caddy_sites: []

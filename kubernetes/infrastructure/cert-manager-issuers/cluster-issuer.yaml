@@ -1,0 +1,17 @@
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: step-ca
+spec:
+  acme:
+    server: https://ca.home.arpa/acme/acme/directory
+    # ルートCA(公開情報)を site_pki.yml 作成の cluster-issuer-vars ConfigMap から
+    # Flux の postBuild.substituteFrom で注入する(実値をGitに置かないため)
+    caBundle: "${ROOT_CA_B64}"
+    privateKeySecretRef:
+      name: step-ca-acme-account
+    solvers:
+      - http01:
+          ingress:
+            ingressClassName: traefik

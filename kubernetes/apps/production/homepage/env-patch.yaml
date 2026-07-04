@@ -7,5 +7,6 @@ metadata:
 spec:
   values:
     env:
+      # Ingress の Host。これが合わないと Homepage が Host ヘッダを拒否する
       - name: HOMEPAGE_ALLOWED_HOSTS
-        value: "192.168.0.235"
+        value: "homepage.home.arpa"

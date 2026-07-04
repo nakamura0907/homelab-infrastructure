@@ -1,0 +1,163 @@
+---
+- name: Ensure apt keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Install smallstep apt repository signing key
+  ansible.builtin.get_url:
+    url: https://packages.smallstep.com/keys/apt/repo-signing-key.gpg
+    dest: /etc/apt/keyrings/smallstep.asc
+    mode: "0644"
+
+- name: Add smallstep apt repository
+  ansible.builtin.apt_repository:
+    repo: deb [signed-by=/etc/apt/keyrings/smallstep.asc] https://packages.smallstep.com/stable/debian debs main
+    filename: smallstep
+    state: present
+
+- name: Install step-ca and step-cli
+  ansible.builtin.apt:
+    name:
+      - step-cli
+      - step-ca
+      - jq
+    state: present
+    update_cache: true
+
+- name: Create step system user
+  ansible.builtin.user:
+    name: "{{ step_ca_user }}"
+    system: true
+    create_home: false
+    shell: /usr/sbin/nologin
+
+- name: Create STEPPATH directory
+  ansible.builtin.file:
+    path: "{{ step_ca_path }}"
+    state: directory
+    owner: "{{ step_ca_user }}"
+    group: "{{ step_ca_user }}"
+    mode: "0700"
+
+- name: Check whether the CA is already initialized
+  ansible.builtin.stat:
+    path: "{{ step_ca_path }}/config/ca.json"
+  register: step_ca_config
+
+- name: Bootstrap the CA (first run only)
+  when: not step_ca_config.stat.exists
+  block:
+    - name: Ensure the CA password is provided via environment
+      ansible.builtin.assert:
+        that:
+          - step_ca_password | length > 0
+        fail_msg: >-
+          環境変数 STEP_CA_PASSWORD を設定してください(例: direnv / .env)。
+          このパスワードはルート/中間CA鍵の暗号化に使われるため紛失しないこと。
+        quiet: true
+
+    # systemd起動時の中間CA鍵の復号にも使うため保持する
+    - name: Write the CA password file
+      ansible.builtin.copy:
+        content: "{{ step_ca_password }}"
+        dest: "{{ step_ca_path }}/password.txt"
+        owner: "{{ step_ca_user }}"
+        group: "{{ step_ca_user }}"
+        mode: "0600"
+      no_log: true
+
+    # rootで実行し後段でstepへchownする(sudo非搭載の最小LXCでも動くように)
+    - name: Initialize root/intermediate CA with ACME provisioner
+      ansible.builtin.command:
+        cmd: >-
+          step ca init --deployment-type standalone
+          --name {{ step_ca_name | quote }}
+          {% for dns_name in step_ca_dns_names %}--dns {{ dns_name | quote }} {% endfor %}
+          --address {{ step_ca_address | quote }}
+          --provisioner admin
+          --password-file {{ step_ca_path }}/password.txt
+          --provisioner-password-file {{ step_ca_path }}/password.txt
+          --acme
+        creates: "{{ step_ca_path }}/config/ca.json"
+      environment:
+        STEPPATH: "{{ step_ca_path }}"
+
+    - name: Extend ACME certificate durations
+      ansible.builtin.shell:
+        cmd: >-
+          set -o pipefail &&
+          jq '(.authority.provisioners[] | select(.type == "ACME") | .claims) =
+          {"defaultTLSCertDuration": "{{ step_ca_acme_default_cert_duration }}",
+          "maxTLSCertDuration": "{{ step_ca_acme_max_cert_duration }}"}'
+          {{ step_ca_path }}/config/ca.json > {{ step_ca_path }}/config/ca.json.tmp &&
+          mv {{ step_ca_path }}/config/ca.json.tmp {{ step_ca_path }}/config/ca.json
+        executable: /bin/bash
+      changed_when: true
+
+    - name: Set ownership of the STEPPATH directory
+      ansible.builtin.file:
+        path: "{{ step_ca_path }}"
+        state: directory
+        recurse: true
+        owner: "{{ step_ca_user }}"
+        group: "{{ step_ca_user }}"
+
+- name: Deploy step-ca systemd unit
+  ansible.builtin.template:
+    src: step-ca.service.j2
+    dest: /etc/systemd/system/step-ca.service
+    mode: "0644"
+  notify: Restart step-ca
+
+- name: Enable and start step-ca
+  ansible.builtin.systemd:
+    name: step-ca
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Read the root certificate fingerprint
+  ansible.builtin.command:
+    cmd: step certificate fingerprint {{ step_ca_path }}/certs/root_ca.crt
+  register: step_ca_fingerprint
+  changed_when: false
+
+# `step ca bootstrap --fingerprint` での安全な取得に使う
+- name: Display the root certificate fingerprint
+  ansible.builtin.debug:
+    msg: "Root CA fingerprint: {{ step_ca_fingerprint.stdout }}"
+
+# ルートCA配布は平文HTTP(:80)。未信頼の初回はHTTPSだと鶏と卵になるため
+- name: Ensure python3 is available for the distribution server
+  ansible.builtin.apt:
+    name: python3
+    state: present
+
+- name: Create the root CA distribution webroot
+  ansible.builtin.file:
+    path: "{{ step_ca_http_webroot }}"
+    state: directory
+    mode: "0755"
+
+- name: Publish the root certificate for HTTP download
+  ansible.builtin.copy:
+    src: "{{ step_ca_path }}/certs/root_ca.crt"
+    dest: "{{ step_ca_http_webroot }}/root_ca.crt"
+    remote_src: true
+    mode: "0644"
+
+- name: Deploy the root CA HTTP distribution systemd unit
+  ansible.builtin.template:
+    src: pki-http.service.j2
+    dest: /etc/systemd/system/pki-http.service
+    mode: "0644"
+  notify: Restart pki-http
+
+- name: Enable and start the root CA HTTP distribution service
+  ansible.builtin.systemd:
+    name: pki-http
+    enabled: true
+    state: started
+    daemon_reload: true

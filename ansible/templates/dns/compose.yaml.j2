@@ -19,10 +19,10 @@ services:
     restart: unless-stopped
     depends_on:
       - unbound
+    # 管理UI(:80)はホストへ公開せず、Caddy(:443)がTLS終端して転送する
     ports:
       - "53:53/tcp"
       - "53:53/udp"
-      - "80:80/tcp"
     environment:
       TZ: "{{ dns_timezone }}"
       WEBPASSWORD: "{{ dns_web_password }}"
@@ -37,6 +37,29 @@ services:
     networks:
       dns_net:
         ipv4_address: {{ dns_pihole_ip }}
+
+  # Pi-hole管理UIをTLS終端(step-caからACMEで自動取得)
+  caddy:
+    image: {{ caddy_image }}
+    container_name: caddy
+    restart: unless-stopped
+    depends_on:
+      - pihole
+    ports:
+      - "80:80/tcp"
+      - "443:443/tcp"
+    # ACMEサーバーの名前解決をDNS(自分自身)の稼働状態に依存させない
+    extra_hosts:
+      - "ca.home.arpa:{{ pki_host_ip }}"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/data:/data
+      - ./caddy/config:/config
+      # ACME接続の信頼に使うルートCA(site_pki.ymlが配布)
+      - /usr/local/share/ca-certificates/homelab-root-ca.crt:/etc/caddy/root_ca.crt:ro
+    networks:
+      dns_net:
+        ipv4_address: {{ dns_caddy_ip }}
 
 networks:
   dns_net:

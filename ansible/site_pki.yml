@@ -1,0 +1,86 @@
+---
+- name: Setup internal CA (step-ca)
+  hosts: pki
+  roles:
+    - step_ca
+
+# 各管理ホストのOS信頼ストアへルートCAを配布する(ACMEクライアントのCA接続の信頼に必要)。
+# 端末への配布手順は docs/pki.md を参照。
+- name: Distribute the root CA certificate
+  hosts: k3s_cluster:infra_nodes
+  tasks:
+    - name: Read the root certificate from the CA host
+      ansible.builtin.slurp:
+        src: /etc/step-ca/certs/root_ca.crt
+      delegate_to: "{{ groups['pki'][0] }}"
+      register: pki_root_ca
+
+    - name: Ensure ca-certificates is installed
+      ansible.builtin.apt:
+        name: ca-certificates
+        state: present
+
+    - name: Install the root certificate into the system trust store
+      ansible.builtin.copy:
+        content: "{{ pki_root_ca.content | b64decode }}"
+        dest: /usr/local/share/ca-certificates/homelab-root-ca.crt
+        mode: "0644"
+      notify: Update CA certificates
+
+    # DNS停止時でも証明書更新が継続できるようCAの名前解決を固定する
+    - name: Pin ca.home.arpa in /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        line: "{{ groups['pki'][0] }} ca.home.arpa"
+        regexp: '\sca\.home\.arpa$'
+
+  handlers:
+    - name: Update CA certificates
+      ansible.builtin.command:
+        cmd: update-ca-certificates
+      changed_when: true
+
+# ルートCA(公開情報)を cluster-issuer-vars ConfigMap に投入し、Flux の
+# postBuild.substituteFrom で ClusterIssuer の caBundle へ注入させる(実値をGit外に保つ)。
+# kubectl はコントロールノード(localhost)で実行する。
+- name: Seed the root CA into the cluster for cert-manager
+  hosts: k3s_prod_cluster_server
+  gather_facts: false
+  vars:
+    repo_root: "{{ playbook_dir }}/.."
+    pki_kubeconfig: "{{ repo_root }}/.kube/pki-seed.yaml"
+  tasks:
+    - name: Read the root certificate from the CA host
+      ansible.builtin.slurp:
+        src: /etc/step-ca/certs/root_ca.crt
+      delegate_to: "{{ groups['pki'][0] }}"
+      register: pki_seed_root_ca
+
+    - name: Read kubeconfig from the K3s server
+      ansible.builtin.slurp:
+        src: /etc/rancher/k3s/k3s.yaml
+      register: pki_seed_kubeconfig
+
+    - name: Write kubeconfig to control node with node address
+      ansible.builtin.copy:
+        content: >-
+          {{ pki_seed_kubeconfig.content | b64decode
+             | replace('https://127.0.0.1:6443', 'https://' ~ inventory_hostname ~ ':6443') }}
+        dest: "{{ pki_kubeconfig }}"
+        mode: "0600"
+      delegate_to: localhost
+
+    # slurpのcontentは既にbase64で、caBundleが要求するbase64エンコードPEMと一致する
+    - name: Create/update cluster-issuer-vars ConfigMap with the root CA
+      ansible.builtin.shell:
+        cmd: >-
+          set -o pipefail
+          && kubectl --kubeconfig {{ pki_kubeconfig | quote }} create configmap cluster-issuer-vars
+          --namespace flux-system
+          --from-literal=ROOT_CA_B64={{ pki_seed_root_ca.content | quote }}
+          --dry-run=client -o yaml
+          | kubectl --kubeconfig {{ pki_kubeconfig | quote }} apply -f -
+        executable: /bin/bash
+      register: pki_seed_cm
+      changed_when: "'created' in pki_seed_cm.stdout or 'configured' in pki_seed_cm.stdout"
+      delegate_to: localhost
