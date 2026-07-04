@@ -4,3 +4,9 @@
     name: step-ca
     state: restarted
     daemon_reload: true
+
+- name: Restart pki-http
+  ansible.builtin.systemd:
+    name: pki-http
+    state: restarted
+    daemon_reload: true

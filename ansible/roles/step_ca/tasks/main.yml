@@ -128,3 +128,38 @@
 - name: Display the root certificate fingerprint
   ansible.builtin.debug:
     msg: "Root CA fingerprint: {{ step_ca_fingerprint.stdout }}"
+
+# --- ルートCA(公開情報)の平文HTTP配布口 ---
+# 初回はまだルートを信頼していないため HTTPS だと鶏と卵になる。平文HTTPで配る。
+# step-ca は :443、この配布口は :80 で競合しない。
+- name: Ensure python3 is available for the distribution server
+  ansible.builtin.apt:
+    name: python3
+    state: present
+
+- name: Create the root CA distribution webroot
+  ansible.builtin.file:
+    path: "{{ step_ca_http_webroot }}"
+    state: directory
+    mode: "0755"
+
+- name: Publish the root certificate for HTTP download
+  ansible.builtin.copy:
+    src: "{{ step_ca_path }}/certs/root_ca.crt"
+    dest: "{{ step_ca_http_webroot }}/root_ca.crt"
+    remote_src: true
+    mode: "0644"
+
+- name: Deploy the root CA HTTP distribution systemd unit
+  ansible.builtin.template:
+    src: pki-http.service.j2
+    dest: /etc/systemd/system/pki-http.service
+    mode: "0644"
+  notify: Restart pki-http
+
+- name: Enable and start the root CA HTTP distribution service
+  ansible.builtin.systemd:
+    name: pki-http
+    enabled: true
+    state: started
+    daemon_reload: true

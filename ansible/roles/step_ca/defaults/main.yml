@@ -16,3 +16,6 @@ step_ca_acme_max_cert_duration: 720h
 # 初期化パスワード(ルート/中間CA鍵の暗号化に使用)。
 # 平文コミット禁止のため環境変数から渡す(例: direnv / .env)
 step_ca_password: "{{ lookup('ansible.builtin.env', 'STEP_CA_PASSWORD') | default('') }}"
+
+# ルートCA(公開情報)の平文HTTP配布口の webroot(http://ca.home.arpa/root_ca.crt)
+step_ca_http_webroot: /var/www/pki
