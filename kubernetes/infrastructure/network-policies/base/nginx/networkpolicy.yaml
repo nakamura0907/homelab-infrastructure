@@ -1,0 +1,32 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: nginx
+  labels:
+    app.kubernetes.io/part-of: network-policies
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+# nginx は LB .161 で LAN 公開(Traefik 経由ではない)。/24 は node SNAT もカバー。
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-lan
+  namespace: nginx
+  labels:
+    app.kubernetes.io/part-of: network-policies
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 192.168.0.0/24
+      ports:
+        - port: 80
+          protocol: TCP

@@ -1,0 +1,38 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: homepage
+  labels:
+    app.kubernetes.io/part-of: network-policies
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+# Traefik からの流入のみ許可。
+# - 3000: homepage の containerPort(Service は 80 -> targetPort 3000)
+# - 8089: cert-manager の HTTP-01 acmesolver Pod は Ingress の namespace(=homepage)に作られるため、
+#         Traefik がそこへ到達できないと homepage-tls の発行・更新が失敗する
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traefik
+  namespace: homepage
+  labels:
+    app.kubernetes.io/part-of: network-policies
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: traefik
+      ports:
+        - port: 3000
+          protocol: TCP
+        - port: 8089
+          protocol: TCP

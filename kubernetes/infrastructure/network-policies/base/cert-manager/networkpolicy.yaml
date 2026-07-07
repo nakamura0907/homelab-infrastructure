@@ -1,0 +1,54 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/part-of: network-policies
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+# apiserver(server node のホスト IP 発)からの cert-manager webhook(containerPort 10250)を許可。
+# 無いと Certificate / Issuer の CRUD(= Flux の apply)が全て拒否される。
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-webhook
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/part-of: network-policies
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 192.168.0.0/24
+      ports:
+        - port: 10250
+          protocol: TCP
+---
+# 将来 metrics namespace の ServiceMonitor から scrape する場合に備える(cert-manager metrics 9402)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-metrics-scrape
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/part-of: network-policies
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: metrics
+      ports:
+        - port: 9402
+          protocol: TCP
