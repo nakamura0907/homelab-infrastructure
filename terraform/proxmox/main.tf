@@ -130,42 +130,6 @@ module "openmediavault" {
   passthrough_file = var.openmediavault_passthrough_file
 }
 
-// Secret Manager
-module "secret_manager" {
-  source = "./modules/proxmox-lxc"
-
-  target_node = var.target_node
-
-  ostemplate      = var.lxc_ostemplate
-  cpuunits        = var.secret_manager_cpuunits
-  hostname        = var.secret_manager_hostname
-  memory          = var.secret_manager_memory
-  onboot          = var.secret_manager_onboot
-  network_ip      = var.secret_manager_network_ip
-  network_gw      = var.lxc_gw
-  rootfs_size     = var.secret_manager_rootfs_size
-  ssh_public_keys = var.sshkeys
-  swap            = var.secret_manager_swap
-  vmid            = var.secret_manager_vmid
-}
-// local-exec不要で作成後の起動ができるようになったため削除
-# resource "null_resource" "configure_secret_manager" {
-#   depends_on = [module.secret_manager]
-
-#   provisioner "local-exec" {
-#     environment = {
-#       PM_API_URL = var.pm_api_url
-#       NODE       = var.target_node
-#       VMID       = var.secret_manager_vmid
-#       TOKEN      = "${var.pm_api_token_id}=${var.pm_api_token_secret}"
-#     }
-#     command = <<EOT
-#         curl -k -X POST "$PM_API_URL/nodes/$NODE/lxc/$VMID/status/start" \
-#             -H "Authorization: PVEAPIToken=$TOKEN"
-#     EOT
-#   }
-# }
-
 // monitoring
 module "monitoring" {
   source = "./modules/proxmox-lxc"

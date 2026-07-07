@@ -2,8 +2,8 @@
 grafana_ini:
   security:
     admin_user: admin
-    # TODO: 修正
-    admin_password: password
+    # 平文を置かず環境変数から注入（docs/secret-management.md 参照）
+    admin_password: "{{ lookup('ansible.builtin.env', 'GRAFANA_ADMIN_PASSWORD') }}"
   # Caddy(https://grafana.home.arpa)経由での提供に合わせる
   server:
     domain: grafana.home.arpa

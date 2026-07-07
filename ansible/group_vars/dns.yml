@@ -5,9 +5,8 @@
 dns_host_ip: "192.168.0.213"
 dns_timezone: "Asia/Tokyo"
 
-# Pi-hole 管理画面のパスワード
-# TODO: 平文を避け、Ansible Vault もしくは secret-manager(vault) 連携へ置き換える
-dns_web_password: "changeme"
+# Pi-hole 管理画面のパスワード（平文を置かず環境変数から注入。docs/secret-management.md 参照）
+dns_web_password: "{{ lookup('ansible.builtin.env', 'DNS_WEB_PASSWORD') }}"
 
 # Compose プロジェクトの配置先（LXC 内）
 dns_compose_dir: "/opt/dns"
@@ -36,7 +35,6 @@ dns_records:
   - { ip: "192.168.0.200", name: "proxmox" }
   - { ip: "192.168.0.210", name: "openmediavault" }
   - { ip: "192.168.0.211", name: "ca" }
-  - { ip: "192.168.0.212", name: "vault" }
   - { ip: "192.168.0.213", name: "dns" }
   - { ip: "192.168.0.213", name: "pihole" }
   - { ip: "192.168.0.214", name: "monitoring" }
