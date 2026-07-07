@@ -1,5 +1,7 @@
 ---
-# token: "changeme!"
+# クラスタトークンを固定する場合のみ有効化する（未設定なら k3s 側で自動生成）。
+# 平文は置かず環境変数から注入する（docs/secret-management.md 参照）。
+# token: "{{ lookup('ansible.builtin.env', 'K3S_TOKEN') }}"
 api_endpoint: "{{ hostvars[groups['k3s_stg_cluster_server'][0]]['ansible_host'] | default(groups['k3s_stg_cluster_server'][0]) }}"
 server_group: "k3s_stg_cluster_server"
 # site_flux.yml が参照する Flux クラスターディレクトリ (kubernetes/clusters/<name>)

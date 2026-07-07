@@ -39,7 +39,7 @@ IdPは **Authelia** を採用予定。
 
 ## 次フェーズの作業(未実施)
 
-1. シークレット管理の実装(Vault @ `vault.home.arpa`)— Autheliaのsecret類(JWT/セッション/OIDC HMAC・秘密鍵)の供給元
+1. Autheliaのsecret類(JWT/セッション/OIDC HMAC・秘密鍵)は **SOPS+age** で暗号化した `secret.sops.yaml` をFluxが復号して供給する(→ [docs/secret-management.md](secret-management.md))
 2. Authelia のデプロイ(Flux HelmRelease + Ingress `auth.home.arpa`)
 3. ユーザーDB(まずはファイルベース)とセッションストア(小規模ならメモリ/SQLite、必要ならRedis)
 4. OIDCクライアント登録(Grafana等)と Traefik `forwardAuth` ミドルウェアの適用

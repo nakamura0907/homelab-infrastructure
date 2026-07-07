@@ -22,7 +22,6 @@ step-ca (LXC 192.168.0.211 / ca.home.arpa)
 - ルートCA/中間CAの秘密鍵は step-ca LXC 内(`/etc/step-ca`)にのみ存在する。**リポジトリには絶対にコミットしない**
 - ACMEアカウント鍵・サーバ証明書鍵は各クライアント(cert-manager/Caddy等)が自動生成・保管する
 - TLS対象はユーザー向けWeb UI/APIのみ。exporter類(:9100等)の内部メトリクスは対象外
-- Vault(secret-manager)は未構成のため対象外。実装時に最初からstep-ca証明書でlistenerをTLS化する
 
 ## 前提条件: home.arpa の名前解決
 
