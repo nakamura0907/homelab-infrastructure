@@ -148,23 +148,6 @@ module "secret_manager" {
   swap            = var.secret_manager_swap
   vmid            = var.secret_manager_vmid
 }
-// local-exec不要で作成後の起動ができるようになったため削除
-# resource "null_resource" "configure_secret_manager" {
-#   depends_on = [module.secret_manager]
-
-#   provisioner "local-exec" {
-#     environment = {
-#       PM_API_URL = var.pm_api_url
-#       NODE       = var.target_node
-#       VMID       = var.secret_manager_vmid
-#       TOKEN      = "${var.pm_api_token_id}=${var.pm_api_token_secret}"
-#     }
-#     command = <<EOT
-#         curl -k -X POST "$PM_API_URL/nodes/$NODE/lxc/$VMID/status/start" \
-#             -H "Authorization: PVEAPIToken=$TOKEN"
-#     EOT
-#   }
-# }
 
 // monitoring
 module "monitoring" {
@@ -186,7 +169,6 @@ module "monitoring" {
 
   features_nesting = true
 }
-// local-exec不要で作成後の起動ができるようになったため削除
 
 // DNS (Pi-hole + Unbound)
 module "dns" {
