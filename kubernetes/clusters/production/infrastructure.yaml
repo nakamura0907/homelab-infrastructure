@@ -104,3 +104,28 @@ spec:
   path: ./kubernetes/infrastructure/traefik
   prune: true
   wait: true
+
+---
+# 各 namespace の Pod 間通信を最小権限化する NetworkPolicy 群。
+# 対象 namespace が先に存在している必要があるため、それらを作る Kustomization に依存させる。
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: network-policies
+  namespace: flux-system
+spec:
+  interval: 1h
+  retryInterval: 1m
+  timeout: 5m
+  dependsOn:
+    - name: metallb-system
+    - name: cert-manager
+    - name: traefik
+    # homepage / logging / metrics の namespace は apps が作成する
+    - name: apps
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./kubernetes/infrastructure/network-policies/production
+  prune: true
+  wait: true

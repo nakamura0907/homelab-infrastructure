@@ -1,0 +1,73 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: logging
+  labels:
+    app.kubernetes.io/part-of: network-policies
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+# namespace 内の通信を全許可(promtail -> loki-gateway:8080 -> loki:3100/9095 のパイプライン)。
+# from の podSelector: {} は「同一 namespace の全 Pod」を意味する。
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-intra-namespace
+  namespace: logging
+  labels:
+    app.kubernetes.io/part-of: network-policies
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector: {}
+---
+# 外部 Grafana(192.168.0.214)が LB .233 経由で Loki gateway(containerPort 8080)へクエリする分。
+# LB 側に sourceRanges が無いため /24 で許可(externalTrafficPolicy: Cluster の node SNAT もカバー)。
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-lan-gateway
+  namespace: logging
+  labels:
+    app.kubernetes.io/part-of: network-policies
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 192.168.0.0/24
+      ports:
+        - port: 8080
+          protocol: TCP
+---
+# 将来 metrics namespace の ServiceMonitor から scrape する場合に備える(loki:3100 / promtail:3101)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-metrics-scrape
+  namespace: logging
+  labels:
+    app.kubernetes.io/part-of: network-policies
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: metrics
+      ports:
+        - port: 3100
+          protocol: TCP
+        - port: 3101
+          protocol: TCP
