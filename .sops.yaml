@@ -1,0 +1,13 @@
+# SOPS 暗号化ルール (K8s Secret 用)
+#
+# age の公開 recipient のみをここに置く（秘密鍵は絶対にコミットしない）。
+# 導入時に `age-keygen -o ~/.config/sops/age/keys.txt` で鍵を生成し、
+# 出力される公開鍵 (age1... で始まる文字列) で下記 REPLACE_ME を置き換える。
+# 詳細は docs/secret-management.md を参照。
+#
+# encrypted_regex により data/stringData の "値" だけを暗号化し、
+# apiVersion/kind/metadata などの構造やキー名は平文のまま残す（差分レビュー可能）。
+creation_rules:
+  - path_regex: kubernetes/.*\.sops\.ya?ml$
+    encrypted_regex: "^(data|stringData)$"
+    age: REPLACE_ME

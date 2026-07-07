@@ -7,6 +7,7 @@
     repo_root: "{{ playbook_dir }}/.."
     flux_github_user: "{{ lookup('ansible.builtin.env', 'GITHUB_USER') }}"
     flux_github_token: "{{ lookup('ansible.builtin.env', 'GITHUB_TOKEN') }}"
+    flux_age_key_file: "{{ lookup('ansible.builtin.env', 'SOPS_AGE_KEY_FILE') }}"
     flux_kubeconfig: "{{ repo_root }}/.kube/{{ flux_cluster }}.yaml"
     flux_system_path: "{{ repo_root }}/kubernetes/clusters/{{ flux_cluster }}/flux-system"
 
@@ -18,6 +19,15 @@
           - flux_github_token | length > 0
         fail_msg: >-
           GITHUB_USER と GITHUB_TOKEN を環境変数で設定してください（例: direnv / .env）。
+        quiet: true
+
+    - name: Ensure the SOPS age key file is provided via environment
+      ansible.builtin.assert:
+        that:
+          - flux_age_key_file | length > 0
+        fail_msg: >-
+          SOPS_AGE_KEY_FILE を環境変数で設定してください（例: direnv / .env）。
+          age-keygen で鍵を生成し、そのファイルパスを指定します。詳細は docs/secret-management.md 参照。
         quiet: true
 
     - name: Read kubeconfig from the K3s server
@@ -84,6 +94,24 @@
         executable: /bin/bash
       register: flux_secret
       changed_when: "'created' in flux_secret.stdout or 'configured' in flux_secret.stdout"
+      no_log: true
+      delegate_to: localhost
+
+    # SOPS で暗号化した K8s Secret を kustomize-controller が復号するための age 秘密鍵。
+    # キー名は age.agekey 固定 (kustomize-controller が .agekey 接尾辞のキーを読む)。
+    # 秘密鍵はローカルの SOPS_AGE_KEY_FILE からクラスタへ流し込むだけで、Git には残さない。
+    - name: Create sops-age decryption key secret
+      ansible.builtin.shell:
+        cmd: >-
+          set -o pipefail
+          && kubectl --kubeconfig {{ flux_kubeconfig | quote }} create secret generic sops-age
+          --namespace flux-system
+          --from-file=age.agekey={{ flux_age_key_file | quote }}
+          --dry-run=client -o yaml
+          | kubectl --kubeconfig {{ flux_kubeconfig | quote }} apply -f -
+        executable: /bin/bash
+      register: flux_sops_secret
+      changed_when: "'created' in flux_sops_secret.stdout or 'configured' in flux_sops_secret.stdout"
       no_log: true
       delegate_to: localhost
 

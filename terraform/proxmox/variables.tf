@@ -199,40 +199,6 @@ variable "openmediavault_storage_size" {
   default = "6G"
 }
 
-// LXC - Secret Manager
-variable "secret_manager_cpuunits" {
-  type    = number
-  default = 1024
-}
-variable "secret_manager_hostname" {
-  type    = string
-  default = "secret-manager"
-}
-variable "secret_manager_memory" {
-  type    = number
-  default = 1024
-}
-variable "secret_manager_onboot" {
-  type    = bool
-  default = true
-}
-variable "secret_manager_network_ip" {
-  type    = string
-  default = "192.168.0.212/24"
-}
-variable "secret_manager_rootfs_size" {
-  type    = string
-  default = "8G"
-}
-variable "secret_manager_swap" {
-  type    = number
-  default = 512
-}
-variable "secret_manager_vmid" {
-  type    = number
-  default = 212
-}
-
 // LXC-monitoring
 variable "monitoring_cpuunits" {
   type    = number

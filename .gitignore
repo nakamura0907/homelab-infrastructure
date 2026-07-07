@@ -10,5 +10,12 @@ diagram_pihole.png
 .env
 .direnv
 
+# SOPS / age — 秘密鍵と復号済みファイルは絶対にコミットしない
+# (暗号化済みの *.sops.yaml はコミット対象。秘密鍵は ~/.config/sops/age/ 等 Git 外に置く)
+*.agekey
+keys.txt
+*.dec.yaml
+*.dec.yml
+
 # ansible-lint / ansible-galaxy のローカルキャッシュ
 .ansible/

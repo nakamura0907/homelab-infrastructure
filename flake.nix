@@ -23,10 +23,11 @@
             ansible
             gnutar
             go-task
+            sops age
           ];
           shellHook = ''
             echo "🏠 Homelab dev environment loaded!"
-            echo "Available tools: python3, terraform, kubectl, helm, fluxcd, ansible go-task"
+            echo "Available tools: python3, terraform, kubectl, helm, fluxcd, ansible, go-task, sops, age"
           '';
         };
       });
