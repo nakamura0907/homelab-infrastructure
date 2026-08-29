@@ -1,50 +1,82 @@
-"""
-Dependencies:
-- Python 3.9+
-- diagrams package
-
-Installation:
-- sudo apt install -y python3-diagrams
-
-Licences:
-- [pi-hole/graphics](https://github.com/pi-hole/graphics/blob/master/LICENSE)
-"""
-from diagrams import Cluster, Diagram
-from diagrams.onprem.proxmox import Pve
-from diagrams.onprem.monitoring import Grafana, Prometheus
+from diagrams import Diagram, Cluster, Edge
 from diagrams.onprem.client import User
 from diagrams.onprem.vcs import Github
-from diagrams.onprem.gitops import Flux
+from diagrams.onprem.certificates import LetsEncrypt, CertManager
+from diagrams.onprem.dns import Coredns
+from diagrams.generic.network import Router
+from diagrams.onprem.network import Caddy, Traefik, Nginx
+from diagrams.onprem.monitoring import Prometheus, Grafana
+from diagrams.onprem.logging import Loki, FluentBit
 from diagrams.generic.storage import Storage
-from diagrams.custom import Custom
-from urllib.request import urlretrieve
+from diagrams.onprem.gitops import Flux
 
-with Diagram("Homelab", show=False, direction="TB"):
-    user = User("user")
-    github = Github("github")
+graph_attr = {
+    "fontsize": "14",
+    "bgcolor": "white",
+    "pad": "1.0",
+    "nodesep": "0.5",
+    "ranksep": "1.2",
+}
 
+with Diagram(
+    "自宅サーバー構成図 (Proxmox — GMKtec G3 Plus)",
+    filename="docs/diagram",
+    show=False,
+    direction="TB",
+    graph_attr=graph_attr,
+):
+    user = User("User")
+    github = Github("GitHub")
+
+    with Cluster("LXC .211 — step-ca"):
+        step_ca = LetsEncrypt("step-ca\n内部CA / ACME")
+
+    with Cluster("LXC .213 — DNS"):
+        pihole = Router("Pi-hole")
+        unbound = Router("Unbound")
+        pihole >> unbound
+
+    with Cluster("LXC .214 — Monitoring"):
+        caddy = Caddy("Caddy")
+        grafana = Grafana("Grafana")
+        prometheus = Prometheus("Prometheus")
+        caddy >> [grafana, prometheus]
+        grafana >> prometheus
+
+    with Cluster("VM — OpenMediaVault"):
+        ovm = Storage("OpenMediaVault\nNAS")
+
+    with Cluster("K3s クラスタ — MetalLB 192.168.0.230"):
+        flux = Flux("Flux CD")
+        traefik = Traefik("Traefik")
+        cert_manager = CertManager("cert-manager")
+        coredns = Coredns("CoreDNS")
+        homepage = Nginx("Homepage")
+        k_prom = Prometheus("Prometheus")
+        loki = Loki("Loki")
+        promtail = FluentBit("Promtail")
+
+        flux >> [traefik, cert_manager, loki]
+        traefik >> homepage
+        cert_manager >> Edge(label="TLS証明書") >> traefik
+        promtail >> loki
+
+    # ユーザーアクセス
+    user >> traefik
+    user >> caddy
     user >> github
 
-    with Cluster("Proxmox"):
-        vm_ovm = Storage("open media vault")
+    # GitOps
+    github >> Edge(label="GitOps") >> flux
 
-        with Cluster("LXC Monitoring"):
-            lxc_prometheus = Prometheus("prometheus")
-            lxc_grafana = Grafana("grafana")
+    # ACME
+    cert_manager >> Edge(label="ACME") >> step_ca
+    caddy >> Edge(label="ACME") >> step_ca
 
-            lxc_prometheus << lxc_grafana
-        with Cluster("VM K3s Prod Cluster", direction="LR"):
-            k3s_prod_flux = Flux("flux2")
-            k3s_prod_prometheus = Prometheus("prometheus")
+    # 監視
+    grafana >> [k_prom, loki]
+    prometheus >> [ovm, pihole]
 
-            pihole_url = "https://raw.githubusercontent.com/pi-hole/graphics/refs/heads/master/Vortex/Vortex.png"
-            pihole_icon = "diagram_pihole.png"
-            urlretrieve(pihole_url, pihole_icon)
-            k3s_prod_pihole = Custom("pihole", pihole_icon)
-        
-    user >> vm_ovm
-    user >> lxc_grafana
-    user >> k3s_prod_pihole
-
-    k3s_prod_prometheus << lxc_grafana
-    k3s_prod_flux >> github
+    # ログ集約
+    ovm >> Edge(label="Alloy") >> loki
+    pihole >> Edge(label="Alloy") >> loki
