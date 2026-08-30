@@ -6,6 +6,15 @@
 
 - name: Setup Grafana
   hosts: grafana
+  pre_tasks:
+    - name: Ensure the Grafana admin password is provided via environment
+      ansible.builtin.assert:
+        that:
+          - grafana_ini.security.admin_password | length > 0
+        fail_msg: >-
+          GRAFANA_ADMIN_PASSWORD を環境変数で設定してください（例: direnv / .env）。
+          詳細は docs/secret-management.md 参照。
+        quiet: true
   roles:
     - grafana.grafana.grafana
 

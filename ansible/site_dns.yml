@@ -21,6 +21,16 @@
           - caddy
         state: restarted
 
+  pre_tasks:
+    - name: Ensure the Pi-hole web password is provided via environment
+      ansible.builtin.assert:
+        that:
+          - dns_web_password | length > 0
+        fail_msg: >-
+          DNS_WEB_PASSWORD を環境変数で設定してください（例: direnv / .env）。
+          詳細は docs/secret-management.md 参照。
+        quiet: true
+
   tasks:
     - name: Check whether systemd-resolved is present
       ansible.builtin.stat:

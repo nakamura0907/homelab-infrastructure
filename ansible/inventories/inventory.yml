@@ -51,6 +51,5 @@ infra_nodes:
   hosts:
     192.168.0.210:  # OpenMediaVault (NAS)
     192.168.0.211:  # PKI (step-ca)
-    192.168.0.212:  # Vault (secret-manager)
     192.168.0.213:  # DNS (Pi-hole + Unbound)
     192.168.0.214:  # monitoring (Prometheus/Grafana自身)

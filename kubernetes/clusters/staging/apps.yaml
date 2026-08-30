@@ -15,3 +15,9 @@ spec:
   prune: true
   wait: true
   timeout: 5m0s
+  # SOPS で暗号化した Secret (*.sops.yaml) を復号する。
+  # 復号鍵は site_flux.yml が投入する flux-system/sops-age Secret。
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
