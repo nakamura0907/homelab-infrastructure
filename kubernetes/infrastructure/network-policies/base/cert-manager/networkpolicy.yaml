@@ -32,7 +32,6 @@ spec:
         - port: 10250
           protocol: TCP
 ---
-# 将来 metrics namespace の ServiceMonitor から scrape する場合に備える(cert-manager metrics 9402)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

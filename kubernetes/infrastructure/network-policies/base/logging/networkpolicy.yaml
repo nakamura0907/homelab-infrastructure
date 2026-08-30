@@ -49,7 +49,6 @@ spec:
         - port: 8080
           protocol: TCP
 ---
-# 将来 metrics namespace の ServiceMonitor から scrape する場合に備える(loki:3100 / promtail:3101)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
