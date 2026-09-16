@@ -36,6 +36,10 @@ data:
           icon: filebrowser
           href: https://files.home.arpa
           description: File Manager
+      - Linkding:
+          icon: linkding
+          href: https://links.home.arpa
+          description: Bookmark Manager
   kubernetes.yaml: |
     {}
   docker.yaml: |

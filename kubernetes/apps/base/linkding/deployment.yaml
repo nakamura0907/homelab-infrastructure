@@ -1,0 +1,45 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linkding
+  namespace: linkding
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: linkding
+  template:
+    metadata:
+      labels:
+        app: linkding
+    spec:
+      containers:
+        - name: linkding
+          image: sissbruecker/linkding:latest
+          env:
+            - name: LD_SUPERUSER_NAME
+              value: admin
+            - name: LD_SUPERUSER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: linkding-secret
+                  key: superuser-password
+            - name: LD_CSRF_TRUSTED_ORIGINS
+              value: "https://links.home.arpa"
+          ports:
+            - containerPort: 9090
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: data
+              mountPath: /etc/linkding/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: linkding-data

@@ -41,4 +41,5 @@ dns_records:
   - { ip: "192.168.0.214", name: "prometheus" }
   - { ip: "192.168.0.230", name: "homepage" }
   - { ip: "192.168.0.230", name: "files" }
+  - { ip: "192.168.0.230", name: "links" }
   - { ip: "192.168.0.230", name: "auth" } # IdP(Authelia)用に予約
