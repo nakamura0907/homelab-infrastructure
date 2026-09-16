@@ -13,7 +13,9 @@ spec:
 ---
 # entrypoint(web=8000 / websecure=8443, chart の containerPort)への流入を許可。
 # - ipBlock 192.168.0.0/24: LAN クライアント + externalTrafficPolicy: Cluster による node SNAT
-# - namespaceSelector: {}   : クラスタ内クライアント(cert-manager の ACME セルフチェックが LB .230 経由でヘアピンする分を含む)
+# - ipBlock 10.42.0.0/16  : Flannel pod CIDR。K3s の NetworkPolicy 実装では namespaceSelector: {}
+#                           が cross-node で機能しないため ipBlock で代替する。
+#                           cert-manager の ACME セルフチェック(LB .230 → kube-proxy DNAT → :8000)を含む。
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -29,7 +31,8 @@ spec:
     - from:
         - ipBlock:
             cidr: 192.168.0.0/24
-        - namespaceSelector: {}
+        - ipBlock:
+            cidr: 10.42.0.0/16
       ports:
         - port: 8000
           protocol: TCP

@@ -1,2 +1,2 @@
 ---
-extra_server_args: "--disable servicelb,traefik"
+extra_server_args: "--disable servicelb,traefik --kube-proxy-arg=feature-gates=LoadBalancerIPMode=false"
