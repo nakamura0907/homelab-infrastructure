@@ -40,6 +40,10 @@ data:
           icon: linkding
           href: https://links.home.arpa
           description: Bookmark Manager
+      - Forgejo:
+          icon: gitea
+          href: https://git.home.arpa
+          description: Git Server
   kubernetes.yaml: |
     {}
   docker.yaml: |
