@@ -35,6 +35,8 @@ spec:
                 secretKeyRef:
                   name: forgejo-secret
                   key: secret-key
+            - name: FORGEJO__service__DISABLE_REGISTRATION
+              value: "true"
           ports:
             - containerPort: 3000
           resources:
