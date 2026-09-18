@@ -14,9 +14,31 @@ spec:
       labels:
         app: filebrowser
     spec:
+      initContainers:
+        - name: setup-ca
+          image: busybox:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              cp /etc/ssl/certs/ca-certificates.crt /shared-ca/ca-bundle.crt
+              cat /homelab-ca/ca.crt >> /shared-ca/ca-bundle.crt
+          volumeMounts:
+            - name: shared-ca
+              mountPath: /shared-ca
+            - name: homelab-ca
+              mountPath: /homelab-ca
       containers:
         - name: filebrowser
           image: ghcr.io/gtsteffaniak/filebrowser:1.5.6-stable
+          env:
+            - name: FILEBROWSER_OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: filebrowser-oidc-secret
+                  key: client-secret
+            - name: SSL_CERT_FILE
+              value: /shared-ca/ca-bundle.crt
           ports:
             - containerPort: 80
           resources:
@@ -34,6 +56,8 @@ spec:
               subPath: config.yaml
             - name: media
               mountPath: /srv
+            - name: shared-ca
+              mountPath: /shared-ca
       volumes:
         - name: data
           persistentVolumeClaim:
@@ -45,3 +69,8 @@ spec:
           nfs:
             server: 192.168.0.200
             path: /mnt/data/media
+        - name: homelab-ca
+          configMap:
+            name: homelab-ca
+        - name: shared-ca
+          emptyDir: {}

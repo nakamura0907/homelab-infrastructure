@@ -14,6 +14,20 @@ spec:
       labels:
         app: linkding
     spec:
+      initContainers:
+        - name: setup-ca
+          image: busybox:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              cp /etc/ssl/certs/ca-certificates.crt /shared-ca/ca-bundle.crt
+              cat /homelab-ca/ca.crt >> /shared-ca/ca-bundle.crt
+          volumeMounts:
+            - name: shared-ca
+              mountPath: /shared-ca
+            - name: homelab-ca
+              mountPath: /homelab-ca
       containers:
         - name: linkding
           image: sissbruecker/linkding:latest
@@ -27,6 +41,27 @@ spec:
                   key: superuser-password
             - name: LD_CSRF_TRUSTED_ORIGINS
               value: "https://links.home.arpa"
+            - name: LD_ENABLE_OIDC
+              value: "True"
+            - name: OIDC_RP_CLIENT_ID
+              value: linkding
+            - name: OIDC_RP_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: linkding-oidc-secret
+                  key: client-secret
+            - name: OIDC_OP_AUTHORIZATION_ENDPOINT
+              value: https://auth.home.arpa/api/oidc/authorization
+            - name: OIDC_OP_TOKEN_ENDPOINT
+              value: https://auth.home.arpa/api/oidc/token
+            - name: OIDC_OP_USER_ENDPOINT
+              value: https://auth.home.arpa/api/oidc/userinfo
+            - name: OIDC_OP_JWKS_ENDPOINT
+              value: https://auth.home.arpa/jwks.json
+            - name: OIDC_RP_SIGN_ALGO
+              value: RS256
+            - name: REQUESTS_CA_BUNDLE
+              value: /shared-ca/ca-bundle.crt
           ports:
             - containerPort: 9090
           resources:
@@ -39,7 +74,14 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /etc/linkding/data
+            - name: shared-ca
+              mountPath: /shared-ca
       volumes:
         - name: data
           persistentVolumeClaim:
             claimName: linkding-data
+        - name: homelab-ca
+          configMap:
+            name: homelab-ca
+        - name: shared-ca
+          emptyDir: {}

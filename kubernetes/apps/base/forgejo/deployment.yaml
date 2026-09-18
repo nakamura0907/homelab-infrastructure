@@ -6,6 +6,8 @@ metadata:
   namespace: forgejo
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: forgejo
@@ -14,6 +16,29 @@ spec:
       labels:
         app: forgejo
     spec:
+      initContainers:
+        - name: setup-ca
+          image: busybox:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              cp /etc/ssl/certs/ca-certificates.crt /shared-ca/ca-bundle.crt
+              cat /homelab-ca/ca.crt >> /shared-ca/ca-bundle.crt
+          volumeMounts:
+            - name: shared-ca
+              mountPath: /shared-ca
+            - name: homelab-ca
+              mountPath: /homelab-ca
+        - name: wait-for-authelia
+          image: busybox:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              until wget -qO- http://authelia.authelia.svc.cluster.local:9091/api/health > /dev/null 2>&1; do
+                echo "Waiting for Authelia..."; sleep 5
+              done
       containers:
         - name: forgejo
           image: codeberg.org/forgejo/forgejo:9
@@ -37,6 +62,26 @@ spec:
                   key: secret-key
             - name: FORGEJO__service__DISABLE_REGISTRATION
               value: "true"
+            - name: SSL_CERT_FILE
+              value: /shared-ca/ca-bundle.crt
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    i=0
+                    until su git -c "forgejo admin auth list" > /dev/null 2>&1 || [ $i -ge 12 ]; do
+                      sleep 5; i=$((i + 1))
+                    done
+                    SECRET=$(cat /secrets/oidc-client-secret)
+                    AUTH_ID=$(su git -c "forgejo admin auth list" 2>/dev/null | grep 'authelia' | awk '{print $1}')
+                    if [ -n "$AUTH_ID" ]; then
+                      su git -c "forgejo admin auth update-oauth --id $AUTH_ID --admin-group ''" || true
+                    else
+                      su git -c "forgejo admin auth add-oauth --name authelia --provider openidConnect --key forgejo --secret '$SECRET' --auto-discover-url https://auth.home.arpa/.well-known/openid-configuration --group-claim-name groups" || true
+                    fi
           ports:
             - containerPort: 3000
           resources:
@@ -49,7 +94,19 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+            - name: oidc-secret
+              mountPath: /secrets
+            - name: shared-ca
+              mountPath: /shared-ca
       volumes:
         - name: data
           persistentVolumeClaim:
             claimName: forgejo-data
+        - name: oidc-secret
+          secret:
+            secretName: forgejo-oidc-secret
+        - name: homelab-ca
+          configMap:
+            name: homelab-ca
+        - name: shared-ca
+          emptyDir: {}

@@ -15,6 +15,12 @@
           GRAFANA_ADMIN_PASSWORD を環境変数で設定してください（例: direnv / .env）。
           詳細は docs/secret-management.md 参照。
         quiet: true
+    - name: Add auth.home.arpa to /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        line: "192.168.0.230 auth.home.arpa"
+        state: present
+      become: true
   roles:
     - grafana.grafana.grafana
 

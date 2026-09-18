@@ -5,6 +5,7 @@ namespace: filebrowser
 resources:
   - namespace.yaml
   - configmap.yaml
+  - ca-configmap.yaml
   - pvc.yaml
   - deployment.yaml
   - service.yaml

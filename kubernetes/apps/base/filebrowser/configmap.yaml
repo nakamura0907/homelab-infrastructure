@@ -12,3 +12,11 @@ data:
         - path: /srv
           config:
             defaultEnabled: true
+    auth:
+      methods:
+        oidc:
+          enabled: true
+          clientId: filebrowser
+          issuerUrl: https://auth.home.arpa
+          scopes: openid profile email groups
+          userIdentifier: preferred_username

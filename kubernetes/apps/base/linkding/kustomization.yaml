@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: linkding
 resources:
   - namespace.yaml
+  - ca-configmap.yaml
   - pvc.yaml
   - deployment.yaml
   - service.yaml

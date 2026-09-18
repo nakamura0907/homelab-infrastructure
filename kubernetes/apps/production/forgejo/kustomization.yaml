@@ -5,4 +5,5 @@ namespace: forgejo
 resources:
   - ../../base/forgejo
   - secret.sops.yaml
+  - oidc-secret.sops.yaml
   - ingress.yaml

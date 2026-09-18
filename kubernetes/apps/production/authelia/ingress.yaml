@@ -1,0 +1,25 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: authelia
+  namespace: authelia
+  annotations:
+    cert-manager.io/cluster-issuer: step-ca
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: auth.home.arpa
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: authelia
+                port:
+                  number: 9091
+  tls:
+    - hosts:
+        - auth.home.arpa
+      secretName: authelia-tls

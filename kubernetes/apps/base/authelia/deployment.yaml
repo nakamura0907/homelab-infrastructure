@@ -1,0 +1,64 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authelia
+  namespace: authelia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authelia
+  template:
+    metadata:
+      labels:
+        app: authelia
+    spec:
+      containers:
+        - name: authelia
+          image: ghcr.io/authelia/authelia:4.39.27
+          env:
+            - name: AUTHELIA_JWT_SECRET_FILE
+              value: /secrets/jwt-secret
+            - name: AUTHELIA_SESSION_SECRET_FILE
+              value: /secrets/session-secret
+            - name: AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE
+              value: /secrets/storage-encryption-key
+            - name: AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET_FILE
+              value: /secrets/oidc-hmac-secret
+          ports:
+            - containerPort: 9091
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: secrets
+              mountPath: /config/configuration.yml
+              subPath: configuration.yml
+            - name: config
+              mountPath: /config/users_database.yml
+              subPath: users_database.yml
+            - name: secrets
+              mountPath: /secrets
+            - name: data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 9091
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: authelia-config
+        - name: secrets
+          secret:
+            secretName: authelia-secrets
+        - name: data
+          persistentVolumeClaim:
+            claimName: authelia-data
