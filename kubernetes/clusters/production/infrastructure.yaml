@@ -123,6 +123,46 @@ spec:
   wait: true
 
 ---
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: longhorn
+  namespace: flux-system
+spec:
+  interval: 1h
+  retryInterval: 1m
+  timeout: 10m
+  dependsOn:
+    - name: cert-manager-issuers
+    - name: traefik
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./kubernetes/infrastructure/longhorn
+  prune: true
+  wait: true
+
+---
+# RecurringJob CRD は Longhorn Helm チャートが導入するため、longhorn に依存させる
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: longhorn-config
+  namespace: flux-system
+spec:
+  interval: 1h
+  retryInterval: 1m
+  timeout: 5m
+  dependsOn:
+    - name: longhorn
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./kubernetes/infrastructure/longhorn-config
+  prune: true
+
+---
 # 各 namespace の Pod 間通信を最小権限化する NetworkPolicy 群。
 # 対象 namespace が先に存在している必要があるため、それらを作る Kustomization に依存させる。
 apiVersion: kustomize.toolkit.fluxcd.io/v1

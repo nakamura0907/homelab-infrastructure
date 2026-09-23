@@ -1,0 +1,11 @@
+---
+# Longhorn 1.12 では BackupTarget は CRD で管理される
+# defaultSettings.backupTarget (Helm) は初期値のみで、CRD が優先される
+apiVersion: longhorn.io/v1beta2
+kind: BackupTarget
+metadata:
+  name: default
+  namespace: longhorn-system
+spec:
+  backupTargetURL: "nfs://192.168.0.200:/mnt/data/k8s"
+  pollInterval: "300s"

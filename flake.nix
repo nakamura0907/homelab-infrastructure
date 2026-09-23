@@ -24,6 +24,7 @@
             gnutar
             go-task
             sops age
+            proxmox-auto-install-assistant
           ];
           shellHook = ''
             echo "🏠 Homelab dev environment loaded!"

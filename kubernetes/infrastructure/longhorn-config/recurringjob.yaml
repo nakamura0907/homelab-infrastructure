@@ -1,0 +1,15 @@
+---
+# 4時間ごとにバックアップを取得し、直近2世代を保持する
+# groups: [default] により、すべての Longhorn ボリュームが対象になる
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: backup-4h
+  namespace: longhorn-system
+spec:
+  cron: "0 */4 * * *"
+  task: backup
+  groups:
+    - default
+  retain: 2
+  concurrency: 1
