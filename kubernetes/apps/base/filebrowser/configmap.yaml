@@ -12,6 +12,14 @@ data:
         - path: /srv
           config:
             defaultEnabled: true
+    userDefaults:
+      account:
+        permissions:
+          modify: true
+          create: true
+          delete: true
+          share: true
+          download: true
     auth:
       methods:
         oidc:
@@ -20,3 +28,5 @@ data:
           issuerUrl: https://auth.home.arpa
           scopes: openid profile email groups
           userIdentifier: preferred_username
+          adminGroup: admins
+          groupsClaim: groups
