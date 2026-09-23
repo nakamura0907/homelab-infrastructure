@@ -45,3 +45,4 @@ dns_records:
   - { ip: "192.168.0.230", name: "git" }
   - { ip: "192.168.0.230", name: "auth" } # IdP(Authelia)用に予約
   - { ip: "192.168.0.230", name: "longhorn" }
+  - { ip: "192.168.0.230", name: "jellyfin" }
