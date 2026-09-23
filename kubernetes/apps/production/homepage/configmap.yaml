@@ -19,7 +19,7 @@ data:
         provider: duckduckgo
         target: _blank
   services.yaml: |
-    - My Apps:
+    - Infrastructure:
       - Proxmox:
           icon: proxmox
           href: https://proxmox.home.arpa:8006
@@ -32,18 +32,35 @@ data:
           icon: grafana
           href: https://grafana.home.arpa/
           description: Analytics and Monitoring
-      - Filebrowser:
-          icon: filebrowser
-          href: https://files.home.arpa
-          description: File Manager
-      - Linkding:
-          icon: linkding
-          href: https://links.home.arpa
-          description: Bookmark Manager
+      - Prometheus:
+          icon: prometheus
+          href: http://prometheus.home.arpa
+          description: Metrics
+      - Longhorn:
+          icon: longhorn
+          href: https://longhorn.home.arpa
+          description: Distributed Storage
+    - Apps:
       - Forgejo:
           icon: gitea
           href: https://git.home.arpa
           description: Git Server
+      - Authelia:
+          icon: authelia
+          href: https://auth.home.arpa
+          description: SSO / Identity Provider
+      - Filebrowser:
+          icon: filebrowser
+          href: https://files.home.arpa
+          description: File Manager
+      - Jellyfin:
+          icon: jellyfin
+          href: https://jellyfin.home.arpa
+          description: Media Server
+      - Linkding:
+          icon: linkding
+          href: https://links.home.arpa
+          description: Bookmark Manager
   kubernetes.yaml: |
     {}
   docker.yaml: |

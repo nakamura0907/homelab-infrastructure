@@ -1,6 +1,6 @@
 from diagrams import Diagram, Cluster, Edge
 from diagrams.onprem.client import User
-from diagrams.onprem.vcs import Github
+from diagrams.onprem.vcs import Github, Gitea
 from diagrams.onprem.certificates import LetsEncrypt, CertManager
 from diagrams.onprem.dns import Coredns
 from diagrams.generic.network import Router
@@ -9,6 +9,7 @@ from diagrams.onprem.monitoring import Prometheus, Grafana
 from diagrams.onprem.logging import Loki, FluentBit
 from diagrams.generic.storage import Storage
 from diagrams.onprem.gitops import Flux
+from diagrams.onprem.compute import Server
 
 graph_attr = {
     "fontsize": "14",
@@ -43,21 +44,31 @@ with Diagram(
         caddy >> [grafana, prometheus]
         grafana >> prometheus
 
-    with Cluster("VM — OpenMediaVault"):
-        ovm = Storage("OpenMediaVault\nNAS")
+    with Cluster("Proxmox NFS (.200)"):
+        nfs = Storage("NFS\n/mnt/data")
 
-    with Cluster("K3s クラスタ — MetalLB 192.168.0.230"):
+    with Cluster("K3s クラスタ 3ノード — MetalLB 192.168.0.230"):
         flux = Flux("Flux CD")
         traefik = Traefik("Traefik")
         cert_manager = CertManager("cert-manager")
         coredns = Coredns("CoreDNS")
+        longhorn = Storage("Longhorn")
+
+        # アプリ
         homepage = Nginx("Homepage")
+        forgejo = Gitea("Forgejo")
+        authelia = Server("Authelia")
+        filebrowser = Server("FileBrowser")
+        jellyfin = Server("Jellyfin")
+        linkding = Server("Linkding")
+
+        # 監視・ログ
         k_prom = Prometheus("Prometheus")
         loki = Loki("Loki")
         promtail = FluentBit("Promtail")
 
-        flux >> [traefik, cert_manager, loki]
-        traefik >> homepage
+        flux >> [traefik, cert_manager, longhorn, loki]
+        traefik >> [homepage, forgejo, authelia, filebrowser, jellyfin, linkding]
         cert_manager >> Edge(label="TLS証明書") >> traefik
         promtail >> loki
 
@@ -75,8 +86,11 @@ with Diagram(
 
     # 監視
     grafana >> [k_prom, loki]
-    prometheus >> [ovm, pihole]
+    prometheus >> pihole
 
     # ログ集約
-    ovm >> Edge(label="Alloy") >> loki
     pihole >> Edge(label="Alloy") >> loki
+
+    # ストレージ
+    nfs >> Edge(label="mount") >> filebrowser
+    longhorn >> Edge(label="backup") >> nfs
